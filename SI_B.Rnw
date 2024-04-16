@@ -904,14 +904,14 @@ Here is the mode of the 100 farm size maps generated.
 
 knitr::include_graphics('finalMap.png')
 
-# Uncomment to produce map - for knitr compilation
-# this causes current computer to push memory caps
-# even with gc()
+# Uncomment to produce map
+# Comment out for knitr compilation
+# this can cause some computers to push memory caps
 # gc()
 # fts <- list.files(path = 'raster_out_forPublication/',
 #                  pattern = 'tif$',
 #                  full.names = T)
-# fs <- stack(fs)
+# fs <- stack(fts)
 # fs <- brick(fs)
 # 
 # getmode <- function(v) {
@@ -944,8 +944,8 @@ knitr::include_graphics('finalMap.png')
 #   scale_fill_viridis_d(direction = -1, begin = .1) +
 #   coord_equal() +
 #   labs(fill = 'Dominant\nFarm Size (ha)')
-
- 
+# 
+# 
 # ggsave('finalMap.png', dpi = 800)
 @
 

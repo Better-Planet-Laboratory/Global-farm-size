@@ -615,7 +615,7 @@ steps_1_6 <- function(df_lwd) {
            cumsum_area = cumsumSkipNA(ag_area),
            prop_sums = ifelse(
                is.na(cumsum_area), 
-               0,
+               NA,
                cumsum_area / max(cumsum_area, na.rm = T)
                )
     )
@@ -900,7 +900,7 @@ ggplot(tmp_compare, aes(value.xp, value.yp)) +
 
 Here is the mode of the 100 farm size maps generated.
 
-<<finalmap, fig.cap='Final map, where dominant farm size (ha) is shown per pixel for the mode of the 100 generated maps.', out.width='0.6\\linewidth', out.width='100%', size='footnotesize', echo=F>>=
+<<finalmap, fig.cap='Final map, where dominant farm size (ha) is shown per pixel for the mode of the 100 generated maps.', out.width='100%', size='footnotesize', echo=F>>=
 
 knitr::include_graphics('finalMap.png')
 

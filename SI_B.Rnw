@@ -223,11 +223,11 @@ We use Ramankutty's 10 km\textsuperscript{2} cropland map (crop, hereafter) and 
 <<getagland>>=
 crop <- paste0('data/Ramankutty_2008_cropland/',
                 'CroplandPastureArea2000_Geotiff/',
-                'cropland2000_area.tif')
+                'Cropland2000_5m.tif')
 
 pasture <- paste0('data/Ramankutty_2008_cropland/',
                   'CroplandPastureArea2000_Geotiff/',
-                  'pasture2000_area.tif')
+                  'Pasture2000_5m.tif')
 
 crop <- raster(crop)
 pasture <- raster(pasture)

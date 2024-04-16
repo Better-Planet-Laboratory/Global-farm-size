@@ -612,8 +612,13 @@ steps_1_6 <- function(df_lwd) {
            pasture = pasture * resValue^2 * 0.0001, # new
            ag = crop + pasture,                     # new
            ag_area = ag * resValue^2 * 0.0001, # original was this line only
-           cumsum_area = cumsumSkipNA(ag_area), 
-           prop_sums = cumsum_area / max(cumsum_area, na.rm = T))
+           cumsum_area = cumsumSkipNA(ag_area),
+           prop_sums = ifelse(
+               is.na(cumsum_area), 
+               0,
+               cumsum_area / max(cumsum_area, na.rm = T)
+               )
+    )
   
   return(dat)
 }

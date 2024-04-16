@@ -1,0 +1,248 @@
+\documentclass{article}
+
+\title{Mehrabi et al. 2020. The global divide in data driven farming. Supplementary Information B: Global farm size map.}
+\author{Code by Vincent Ricciardi}
+\usepackage[margin=2.5 cm]{geometry}
+\usepackage{color}
+\usepackage[parfill]{parskip}
+\usepackage{lineno}
+\usepackage{hyperref}
+\usepackage{subfig}
+\usepackage{float}
+%\usepackage{tgadventor} % fonts
+%\renewcommand{\familydefault}{\sfdefault}
+\usepackage[backend=bibtex, style=ieee, citestyle=authoryear]{biblatex}
+\addbibresource{ReferencesDDA_SIC.bib}
+\addbibresource{Rpackages.bib}
+
+% \input{ReferencesPapersTex} 
+%creates ReferencesDDA_SIC.bib
+
+\usepackage{Sweave}
+\begin{document}
+\input{SI_B-concordance}
+
+
+
+
+\maketitle
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Aim of document}
+
+The aim of this document is to create a global map of farm sizes. We do this by merging two currently available sources of information on the distribution of farm sizes across the world: national level data on farm size distributions and subnational data on field size distributions. The resulting map is a "best guess" of where different sizes of farms are distributed globally. We caution that this map should not be used for detailed country level analysis, but is intended for global assessment studies, where results are typically aggregated at the regional or global level. This document explains the underlying data, pre-processing, and algorithm we developed to create this map. We were driven to create this map as a work that can be built upon and improved as higher resolution and more accurate data become available.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reproducibility}
+\label{reproducibility}
+
+Here we call the  \textbf{R} package \texttt{renv} (\cite{R-renv}). This will create a local library on your computer and install a copy of the packages required by this project as they existed on CRAN by the specified version number, and update the \textbf{R} session to use these packages. This helps make our analysis fully reproducible on your machine. 
+
+Note, the `renv.lock` file needs to be in the top level of this project's directory. This code block needs to only be run when initially setting up your project then can be commented out.
+
+\begin{Schunk}
+\begin{Sinput}
+> # Uncomment during first run
+> # install.packages('renv')
+> # renv::init()
+\end{Sinput}
+\end{Schunk}
+
+We also set the seed of the entire document to ensure the same results when randomly sampling.
+
+\begin{Schunk}
+\begin{Sinput}
+> set.seed(123)
+\end{Sinput}
+\end{Schunk}
+
+
+Note that the \textbf{R} version used here is 4.3.1 (2023-06-16).
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{Schunk}
+\begin{Soutput}
+[[1]]
+[1] TRUE
+
+[[2]]
+[1] TRUE
+
+[[3]]
+[1] TRUE
+
+[[4]]
+[1] TRUE
+
+[[5]]
+[1] TRUE
+
+[[6]]
+[1] TRUE
+
+[[7]]
+[1] TRUE
+
+[[8]]
+[1] TRUE
+
+[[9]]
+[1] TRUE
+
+[[10]]
+[1] TRUE
+
+[[11]]
+[1] TRUE
+
+[[12]]
+[1] TRUE
+
+[[13]]
+[1] TRUE
+
+[[14]]
+[1] TRUE
+
+[[15]]
+[1] TRUE
+
+[[16]]
+[1] TRUE
+
+[[17]]
+[1] TRUE
+
+[[18]]
+[1] TRUE
+
+[[19]]
+[1] TRUE
+
+[[20]]
+[1] TRUE
+
+[[21]]
+[1] TRUE
+\end{Soutput}
+\end{Schunk}
+
+
+ 
+For the analysis in this document we will be using the following packages: Sexpr{R-data.table} (cite{R-data.table}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Data}
+
+In this analysis we leverage two key datasets. \cite{Lowder} (Lowder, hereafter) contains farm size distributions (in terms of agricultural area and the number of farms) for ~100 countries. \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv's qualitative field size classes to spatially disaggregate the Lowder farm size classes. Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
+
+1. Global field size data from Lesiv, retrieved from from http://pure.iiasa.ac.at/id/eprint/15526/ on October 12th, 2018.
+
+2. Country farm size distributions from Lowder, retrieved from 
+http://iopscience.iop.org/article/10.1088/1748-9326/11/12/124010 on July 12th, 2018.
+
+3. Global cropland and pastureland from \cite{Ramankutty} (Ramankutty, hereafter), retrieved from www.earthstat.org on July 12th 2018.
+
+4. Country boundaries, retrieved internally in R through \cite{R-rworldmap}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Country boundaries}
+
+First we make a raster of the world country data from the \texttt{rworldmap} package.
+\begin{Schunk}
+\begin{Sinput}
+> world  <- rworldmap::getMap(resolution = 'low')
+> lookup <- as.data.frame(cbind(as.character(
++   world@data[,'ISO3']),
++   world@data[,'ADMIN'],
++   as.character(world@data[,'ADMIN'])))
+> raster.world <- raster(res = c(0.0833282, 0.0833282))
+> extent(raster.world) <- extent(world)
+> world.raster <- rasterize(as(world, 'SpatialPolygons'), 
++                           raster.world,
++                           field = world@data[, 'ADMIN'],
++                           fun   = 'first')
+> world.rast <- writeRaster(world.raster, 
++                           'data/tmp/worldrast.tif', 
++                           format    = 'GTiff', 
++                           overwrite = TRUE)
+> world  <- raster('data/tmp/worldrast.tif')
+\end{Sinput}
+\end{Schunk}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Country farm size distributions}
+
+Lowder's data contains two variables at the national level, the amount of agricultural area per farm size class, and the number of farms per farm size class. We are interested in the amount of agricultural area per farm size class for our analysis. This data is distributed as the World Census of Agriculture's (WCA) farm size classes, which are: 0-1 ha, 1-2 ha, 2-5 ha, 5-10 ha, 10-20 ha, 20-50 ha, 50-100 ha, 100-200 ha, 200-500 ha, 500-1000 ha, \>1000 ha. This data is read in here and columns relabeled.
+
+\begin{Schunk}
+\begin{Sinput}
+> # Load Lowder's distribution dataset
+> lwd <- read.csv('data/lowder/Lowder_2016_dist.csv', 
++                 header = T, 
++                 na.strings = c('','NA'))
+> # Subset only agricultural area
+> lwd <- lwd[which(lwd$Holdings..agricultural.area != 'Holdings'), ]
+> lwd <- lwd[, c(1,5:15)]
+> names(lwd) <- c('country', '0_1', '1_2', '2_5', 
++                 '5_10', '10_20', '20_50', '50_100', '100_200', 
++                 '200_500', '500_1000', '1000_5000')
+> # Ensure variable type is numeric
+> for (i in names(lwd)[2:length(names(lwd))]) {
++   lwd[[i]] <- as.numeric(lwd[[i]])
++ }
+\end{Sinput}
+\end{Schunk}
+
+Next we need to calculate the cumulative sum per country across Lowder's farm size classes.  To do this we first convert the data from wide to long format, and set classes for countries without data to zero area.
+
+\begin{Schunk}
+\begin{Sinput}
+> lwd <- melt(lwd, id.vars = c('country'))
+> lwd[is.na(lwd)] <- 0
+\end{Sinput}
+\end{Schunk}
+
+Then we calculate the proportional agricultural area for each farm size class for each country. We note that Lowder contains some countries without farm size distributions and some countries do not have a distribution for each farm size class, and so we remove those cases here.
+
+\begin{Schunk}
+\begin{Sinput}
+> lwd <- lwd %>% 
++   group_by(country) %>% 
++   mutate(total = sum(value),
++          perc = value / total) %>%
++    filter(value > 0) %>%
++   select(country, variable, perc)
+\end{Sinput}
+\end{Schunk}
+
+Finally, cast dataframe back into wide form.
+\begin{Schunk}
+\begin{Sinput}
+> lwd <- dcast(lwd, country ~ variable)
+> write.csv(lwd, 'data/tmp/lwd.csv')
+\end{Sinput}
+\end{Schunk}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Global agricultural area}
+
+We use Ramankutty's 10 km\textsuperscript{2} cropland map (crop, hereafter) and pastureland map (pasture, hereafter) as our reference layer of the distribution of agricultural land at the subnational level.  We read in these files here and unionize the crop and pasture maps to create an agricultural land raster (ag, hereafter).
+
+\begin{Schunk}
+\begin{Sinput}
+> crop <- paste0('data/Ramankutty_2008_cropland/',
++                 'CroplandPastureArea2000_Geotiff/',
++                 'cropland2000_area.tif')
+> pasture <- paste0('data/Ramankutty_2008_cropland/',
++                   'CroplandPastureArea2000_Geotiff/',
++                   'pasture2000_area.tif')
+> crop <- raster(crop)

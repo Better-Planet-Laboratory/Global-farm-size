@@ -41,7 +41,7 @@ opts_chunk$set(concordance  = TRUE,
                message      = FALSE,
                warning      = FALSE,
                error        = FALSE,
-               cache        = TRUE,
+               cache        = FALSE,
                width.cutoff = 60)
 
 options(digits = 3)

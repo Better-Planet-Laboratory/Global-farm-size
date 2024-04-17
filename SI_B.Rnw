@@ -115,7 +115,7 @@ packages <- c('data.table',
 new_packages <- packages[!(packages %in% installed.packages()[,'Package'])]
 if(length(new_packages)) install.packages(new_packages)
 
-lapply(packages, require, character = TRUE)
+tmp <- lapply(packages, require, character = TRUE)
 detach(package:plyr)  # detached here to avoid conflicts with dplyr
 @
 
@@ -900,7 +900,7 @@ ggplot(tmp_compare, aes(value.xp, value.yp)) +
 
 Here is the mode of the 100 farm size maps generated.
 
-<<finalmap, fig.cap='Final map showing the dominant farm size (ha) per pixel for the mode of the 100 generated maps', out.width='0.6\\linewidth', fig.height=5, fig.width=7, size='footnotesize', echo=F>>=
+<<finalmap, fig.cap='Final map showing the dominant farm size (ha) per pixel for the mode of the 100 generated maps', out.width='0.6\\linewidth', fig.height=5, fig.width=7, size='footnotesize', echo=F, fig=T>>=
 
 fts <- list.files(path = 'raster_out_forPublication/',
                  pattern = 'tif$',

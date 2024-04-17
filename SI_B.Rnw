@@ -56,7 +56,7 @@ options(digits = 3)
 \newpage
 \section{Aim of document}
 
-This document was first created for the peer reviewed publication:
+This document was originally created for the peer reviewed publication:
 Mehrabi, Z., McDowell, M.J., Ricciardi, V. et al. 2020. The global divide in data-driven farming. Nature Sustainability, 4:154–160. https://doi.org/10.1038/s41893-020-00631-0
 
 

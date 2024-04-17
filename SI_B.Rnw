@@ -41,7 +41,7 @@ opts_chunk$set(concordance  = TRUE,
                message      = FALSE,
                warning      = FALSE,
                error        = FALSE,
-               cache        = FALSE,
+               cache        = TRUE,
                width.cutoff = 60)
 
 options(digits = 3)
@@ -900,53 +900,44 @@ ggplot(tmp_compare, aes(value.xp, value.yp)) +
 
 Here is the mode of the 100 farm size maps generated.
 
-<<finalmap, fig.cap='Final map, where dominant farm size (ha) is shown per pixel for the mode of the 100 generated maps.', out.width='100%', size='footnotesize', echo=F>>=
+<<finalmap, fig.cap='Final map showing the dominant farm size (ha) per pixel for the mode of the 100 generated maps', out.width='0.6\\linewidth', fig.height=5, fig.width=7, size='footnotesize', echo=F>>=
 
-knitr::include_graphics('finalMap.png')
+fts <- list.files(path = 'raster_out_forPublication/',
+                 pattern = 'tif$',
+                 full.names = T)
+fs <- stack(fts)
+fs <- brick(fs)
 
-# Uncomment to produce map
-# Comment out for knitr compilation
-# this can cause some computers to push memory caps
-# gc()
-# fts <- list.files(path = 'raster_out_forPublication/',
-#                  pattern = 'tif$',
-#                  full.names = T)
-# fs <- stack(fts)
-# fs <- brick(fs)
-# 
-# getmode <- function(v) {
-#   uniqv <- unique(v)
-#   uniqv[which.max(tabulate(match(v, uniqv)))]
-# }
-# 
-# fs <- calc(fs, getmode)
-# fs_spdf <- as(fs, 'SpatialPixelsDataFrame')
-# 
-# fs_df <- as.data.frame(fs_spdf)
-# colnames(fs_df) <- c('value', 'x', 'y')
-# fs_df <- fs_df %>%
-#   arrange(value) %>%
-#   mutate(value = factor(value, unique(value)))
-# 
-# ggplot() +
-#   geom_raster(data = fs_df,
-#             aes(x, y,
-#                 fill = value),
-#             alpha = 0.8) +
-#   theme_map(base_family = 'AvantGarde') +
-#   theme(plot.background = element_rect(fill = 'black'),
-#         legend.position = 'right',
-#         legend.justification = 'top',
-#         legend.text = element_text(color = 'white'),
-#         legend.title = element_text(color = 'white'),
-#         legend.background = element_rect(fill = 'transparent')) +
-#   # scale_fill_brewer(palette = 'PiYG', direction = -1) +
-#   scale_fill_viridis_d(direction = -1, begin = .1) +
-#   coord_equal() +
-#   labs(fill = 'Dominant\nFarm Size (ha)')
-# 
-# 
-# ggsave('finalMap.png', dpi = 800)
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+fs <- calc(fs, getmode)
+fs_spdf <- as(fs, 'SpatialPixelsDataFrame')
+
+fs_df <- as.data.frame(fs_spdf)
+colnames(fs_df) <- c('value', 'x', 'y')
+fs_df <- fs_df %>%
+  arrange(value) %>%
+  mutate(value = factor(value, unique(value)))
+
+ggplot() +
+  geom_raster(data = fs_df,
+            aes(x, y,
+                fill = value),
+            alpha = 0.8) +
+  theme_map(base_family = 'AvantGarde') +
+  theme(plot.background = element_rect(fill = 'black'),
+        legend.position = 'right',
+        legend.justification = 'top',
+        legend.text = element_text(color = 'white'),
+        legend.title = element_text(color = 'white'),
+        legend.background = element_rect(fill = 'transparent')) +
+  # scale_fill_brewer(palette = 'PiYG', direction = -1) +
+  scale_fill_viridis_d(direction = -1, begin = .1) +
+  coord_equal() +
+  labs(fill = 'Dominant\nFarm Size (ha)')
 @
 
 \newpage

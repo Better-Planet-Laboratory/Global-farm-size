@@ -11,12 +11,12 @@
 \usepackage{float}
 %\usepackage{tgadventor} % fonts
 %\renewcommand{\familydefault}{\sfdefault}
-\usepackage[backend=bibtex, style=ieee, citestyle=authoryear]{biblatex}
-\addbibresource{ReferencesDDA_SIC.bib}
+\usepackage[backend=bibtex, style=ieee, citestyle=numeric-comp]{biblatex}
+\addbibresource{References.bib}
 \addbibresource{Rpackages.bib}
 
-% \input{ReferencesPapersTex} 
-%creates ReferencesDDA_SIC.bib
+% \input{ReferencesPapersTex}
+% creates ReferencesDDA_SIC.bib
 
 \begin{document}
 \SweaveOpts{concordance=TRUE}
@@ -137,14 +137,14 @@ For the analysis in this document we will be using the following packages: \Sexp
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Data}
 
-In this analysis, we leverage three key datasets. Lowder, Skoet, and Raney 2016 \cite{Lowder} (Lowder, hereafter) contain farm size distributions (in terms of agricultural area and the number of farms) for 100 countries. Lesiv and Fritz et al. 2019 \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv’s ordinal field size classes to spatially disaggregate the Lowder farm size classes, using known agricultural area from Ramankutty et al. 2008 \cite{Ramankutty}. Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
+In this analysis, we leverage three key datasets. Lowder, Skoet, and Raney 2016 \cite{Lowder} (Lowder, hereafter) contain farm size distributions (in terms of agricultural area and the number of farms) for 100 countries. Lesiv and Fritz et al. 2019 \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv’s ordinal field size classes to spatially disaggregate the Lowder farm size classes, using known agricultural area from Ramankutty et al. 2008 \cite{Ramankutty} (Ramankutty, hereafter). Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
 
 1. Global field size data from Lesiv, retrieved from from http://pure.iiasa.ac.at/id/eprint/15526/ on October 12th, 2018.
 
 2. Country farm size distributions from Lowder, retrieved from 
 http://iopscience.iop.org/article/10.1088/1748-9326/11/12/124010 on July 12th, 2018.
 
-3. Global cropland and pastureland from \cite{Ramankutty} (Ramankutty, hereafter), retrieved from www.earthstat.org on July 12th 2018.
+3. Global cropland and pastureland from Ramankutty, retrieved from www.earthstat.org on July 12th 2018.
 
 4. Country boundaries, retrieved internally in R through \cite{R-rworldmap}.
 

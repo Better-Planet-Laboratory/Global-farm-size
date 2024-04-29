@@ -1,6 +1,56 @@
-\documentclass{article}
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{xcolor}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
 
-\title{Global Farm Size, Version 1, 2000. Preliminary Release.}
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+\title{Global Farm Size, Version 1, 2000.}
 \author{Zia Mehrabi and Vincent Ricciardi}
 \usepackage[margin=2.5 cm]{geometry}
 \usepackage{color}
@@ -11,16 +61,17 @@
 \usepackage{float}
 %\usepackage{tgadventor} % fonts
 %\renewcommand{\familydefault}{\sfdefault}
-\usepackage[backend=bibtex, style=ieee, citestyle=authoryear]{biblatex}
-\addbibresource{ReferencesDDA_SIC.bib}
+\usepackage[backend=bibtex, style=ieee, citestyle=numeric-comp]{biblatex}
+\addbibresource{References.bib}
 \addbibresource{Rpackages.bib}
 
-% \input{ReferencesPapersTex} 
-%creates ReferencesDDA_SIC.bib
-
-\usepackage{Sweave}
+% \input{ReferencesPapersTex}
+% creates ReferencesDDA_SIC.bib
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
-\input{SI_B-concordance}
+\SweaveOpts{concordance=TRUE}
+
+
 
 
 
@@ -34,11 +85,14 @@
 \newpage
 \section{Aim of document}
 
-This document was originally created for the peer reviewed publication:
-Mehrabi, Z., McDowell, M.J., Ricciardi, V. et al. 2020. The global divide in data-driven farming. Nature Sustainability, 4:154–160. https://doi.org/10.1038/s41893-020-00631-0
+This dataset was originally created for the peer-reviewed publication: 
 
+Mehrabi, Z., McDowell, M.J., Ricciardi, V. et al. 2020. The global divide in data-driven farming. Nature Sustainability, 4:154–160. https://doi.org/10.1038/s41893-020-00631-0. 
 
-The aim of this document is to create a global map of farm sizes. We do this by merging two currently available sources of information on the distribution of farm sizes across the world: national level data on farm size distributions and subnational data on field size distributions. The resulting map is a "best guess" of where different sizes of farms are distributed globally. We caution that this map should not be used for detailed country level analysis, but is intended for global assessment studies, where results are typically aggregated at the regional or global level. This document explains the underlying data, pre-processing, and algorithm we developed to create this map. We were driven to create this map as a work that can be built upon and improved as higher resolution and more accurate data become available.
+Please use this citation alongside the NASA-SEDAC doi associated with this entry when citing. Note, while only croplands were included in this prior paper, here we include all agricultural lands. 
+
+The aim of this document is to create a global map of farm sizes. We do this by merging two currently available sources of information on the distribution of farm sizes across the world: national level data on farm size distributions and subnational data on field size distributions. The resulting map is a dataset of where different sizes of farms are distributed globally. As with the geospatial products on which the map is derived, we caution that this map should not be used for detailed within country-level analysis, but is intended for global assessment studies, where results are typically aggregated at the regional or global level. This document explains the underlying data, pre-processing, and algorithm we developed to create this map. We were driven to create this map as a work that can be built upon and improved as higher resolution and more accurate data become available.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -49,21 +103,25 @@ Here we call the  \textbf{R} package \texttt{renv} (\cite{R-renv}). This will cr
 
 Note, the `renv.lock` file needs to be in the top level of this project's directory. This code block needs to only be run when initially setting up your project then can be commented out.
 
-\begin{Schunk}
-\begin{Sinput}
-> # Uncomment during first run
-> # install.packages('renv')
-> # renv::init()
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Uncomment during first run}
+\hlcom{# install.packages('renv')}
+\hlcom{# renv::init()}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We also set the seed of the entire document to ensure the same results when randomly sampling.
 
-\begin{Schunk}
-\begin{Sinput}
-> set.seed(123)
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{123}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 Note that the \textbf{R} version used here is 4.3.1 (2023-06-16).
@@ -72,14 +130,16 @@ Note that the \textbf{R} version used here is 4.3.1 (2023-06-16).
 
 
 
+
+
  
-For the analysis in this document we will be using the following packages: Sexpr{R-data.table} (cite{R-data.table}).
+For the analysis in this document we will be using the following packages: \Sexpr{R-data.table} (\cite{R-data.table}), \Sexpr{R-foreach} (\cite{R-foreach}), \Sexpr{R-formatR} (\cite{R-formatR}), \Sexpr{R-ggthemes} (\cite{R-ggthemes}), \Sexpr{R-gmodels} (\cite{R-gmodels}), \Sexpr{R-hablar} (\cite{R-hablar}), \Sexpr{R-leaflet} (\cite{R-leaflet}), \Sexpr{R-lintr} (\cite{R-lintr}), \Sexpr{R-magrittr} (\cite{R-magrittr}), \Sexpr{R-knitr} (\cite{R-knitr}), \Sexpr{R-kknn} (\cite{R-kknn}), \Sexpr{R-plyr} (\cite{R-plyr}), \Sexpr{R-raster} (\cite{R-raster}), \Sexpr{R-renv} (\cite{R-renv}), \Sexpr{R-reshape2} (\cite{R-reshape2}), \Sexpr{R-rgdal} (\cite{R-rgdal}), \Sexpr{R-rworldmap} (\cite{R-rworldmap}), \Sexpr{R-sf} (\cite{R-sf}), \Sexpr{R-tidyverse} (\cite{R-tidyverse}), \Sexpr{R-viridis} (\cite{R-viridis}), \Sexpr{R-zoo} (\cite{R-zoo}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Data}
 
-In this analysis we leverage two key datasets. \cite{Lowder} (Lowder, hereafter) contains farm size distributions (in terms of agricultural area and the number of farms) for ~100 countries. \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv's qualitative field size classes to spatially disaggregate the Lowder farm size classes. Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
+In this analysis, we leverage three key datasets. Lowder, Skoet, and Raney 2016 \cite{Lowder} (Lowder, hereafter) contain farm size distributions (in terms of agricultural area and the number of farms) for 100 countries. Lesiv and Fritz et al. 2019 \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv’s ordinal field size classes to spatially disaggregate the Lowder farm size classes, using known agricultural area from Ramankutty et al. 2008 \cite{Ramankutty}. Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
 
 1. Global field size data from Lesiv, retrieved from from http://pure.iiasa.ac.at/id/eprint/15526/ on October 12th, 2018.
 
@@ -95,122 +155,143 @@ http://iopscience.iop.org/article/10.1088/1748-9326/11/12/124010 on July 12th, 2
 \subsection{Country boundaries}
 
 First we make a raster of the world country data from the \texttt{rworldmap} package.
-\begin{Schunk}
-\begin{Sinput}
-> world  <- rworldmap::getMap(resolution = 'low')
-> lookup <- as.data.frame(cbind(as.character(
-+   world@data[,'ISO3']),
-+   world@data[,'ADMIN'],
-+   as.character(world@data[,'ADMIN'])))
-> raster.world <- raster(res = c(0.0833282, 0.0833282))
-> extent(raster.world) <- extent(world)
-> world.raster <- rasterize(as(world, 'SpatialPolygons'), 
-+                           raster.world,
-+                           field = world@data[, 'ADMIN'],
-+                           fun   = 'first')
-> world.rast <- writeRaster(world.raster, 
-+                           'data/tmp/worldrast.tif', 
-+                           format    = 'GTiff', 
-+                           overwrite = TRUE)
-> world  <- raster('data/tmp/worldrast.tif')
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{world}  \hlkwb{<-} \hlstd{rworldmap}\hlopt{::}\hlkwd{getMap}\hlstd{(}\hlkwc{resolution} \hlstd{=} \hlstr{'low'}\hlstd{)}
+\hlstd{lookup} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(}\hlkwd{cbind}\hlstd{(}\hlkwd{as.character}\hlstd{(}
+  \hlstd{world}\hlopt{@}\hlkwc{data}\hlstd{[,}\hlstr{'ISO3'}\hlstd{]),}
+  \hlstd{world}\hlopt{@}\hlkwc{data}\hlstd{[,}\hlstr{'ADMIN'}\hlstd{],}
+  \hlkwd{as.character}\hlstd{(world}\hlopt{@}\hlkwc{data}\hlstd{[,}\hlstr{'ADMIN'}\hlstd{])))}
+
+\hlstd{raster.world} \hlkwb{<-} \hlkwd{raster}\hlstd{(}\hlkwc{res} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0.0833282}\hlstd{,} \hlnum{0.0833282}\hlstd{))}
+\hlkwd{extent}\hlstd{(raster.world)} \hlkwb{<-} \hlkwd{extent}\hlstd{(world)}
+\hlstd{world.raster} \hlkwb{<-} \hlkwd{rasterize}\hlstd{(}\hlkwd{as}\hlstd{(world,} \hlstr{'SpatialPolygons'}\hlstd{),}
+                          \hlstd{raster.world,}
+                          \hlkwc{field} \hlstd{= world}\hlopt{@}\hlkwc{data}\hlstd{[,} \hlstr{'ADMIN'}\hlstd{],}
+                          \hlkwc{fun}   \hlstd{=} \hlstr{'first'}\hlstd{)}
+\hlstd{world.rast} \hlkwb{<-} \hlkwd{writeRaster}\hlstd{(world.raster,}
+                          \hlstr{'data/tmp/worldrast.tif'}\hlstd{,}
+                          \hlkwc{format}    \hlstd{=} \hlstr{'GTiff'}\hlstd{,}
+                          \hlkwc{overwrite} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+
+\hlstd{world}  \hlkwb{<-} \hlkwd{raster}\hlstd{(}\hlstr{'data/tmp/worldrast.tif'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Country farm size distributions}
 
 Lowder's data contains two variables at the national level, the amount of agricultural area per farm size class, and the number of farms per farm size class. We are interested in the amount of agricultural area per farm size class for our analysis. This data is distributed as the World Census of Agriculture's (WCA) farm size classes, which are: 0-1 ha, 1-2 ha, 2-5 ha, 5-10 ha, 10-20 ha, 20-50 ha, 50-100 ha, 100-200 ha, 200-500 ha, 500-1000 ha, \>1000 ha. This data is read in here and columns relabeled.
 
-\begin{Schunk}
-\begin{Sinput}
-> # Load Lowder's distribution dataset
-> lwd <- read.csv('data/lowder/Lowder_2016_dist.csv', 
-+                 header = T, 
-+                 na.strings = c('','NA'))
-> # Subset only agricultural area
-> lwd <- lwd[which(lwd$Holdings..agricultural.area != 'Holdings'), ]
-> lwd <- lwd[, c(1,5:15)]
-> names(lwd) <- c('country', '0_1', '1_2', '2_5', 
-+                 '5_10', '10_20', '20_50', '50_100', '100_200', 
-+                 '200_500', '500_1000', '1000_5000')
-> # Ensure variable type is numeric
-> for (i in names(lwd)[2:length(names(lwd))]) {
-+   lwd[[i]] <- as.numeric(lwd[[i]])
-+ }
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Load Lowder's distribution dataset}
+\hlstd{lwd} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(}\hlstr{'data/lowder/Lowder_2016_dist.csv'}\hlstd{,}
+                \hlkwc{header} \hlstd{= T,}
+                \hlkwc{na.strings} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{''}\hlstd{,}\hlstr{'NA'}\hlstd{))}
+
+\hlcom{# Subset only agricultural area}
+\hlstd{lwd} \hlkwb{<-} \hlstd{lwd[}\hlkwd{which}\hlstd{(lwd}\hlopt{$}\hlstd{Holdings..agricultural.area} \hlopt{!=} \hlstr{'Holdings'}\hlstd{), ]}
+\hlstd{lwd} \hlkwb{<-} \hlstd{lwd[,} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{5}\hlopt{:}\hlnum{15}\hlstd{)]}
+\hlkwd{names}\hlstd{(lwd)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{'country'}\hlstd{,} \hlstr{'0_1'}\hlstd{,} \hlstr{'1_2'}\hlstd{,} \hlstr{'2_5'}\hlstd{,}
+                \hlstr{'5_10'}\hlstd{,} \hlstr{'10_20'}\hlstd{,} \hlstr{'20_50'}\hlstd{,} \hlstr{'50_100'}\hlstd{,} \hlstr{'100_200'}\hlstd{,}
+                \hlstr{'200_500'}\hlstd{,} \hlstr{'500_1000'}\hlstd{,} \hlstr{'1000_5000'}\hlstd{)}
+
+\hlcom{# Ensure variable type is numeric}
+\hlkwa{for} \hlstd{(i} \hlkwa{in} \hlkwd{names}\hlstd{(lwd)[}\hlnum{2}\hlopt{:}\hlkwd{length}\hlstd{(}\hlkwd{names}\hlstd{(lwd))]) \{}
+  \hlstd{lwd[[i]]} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(lwd[[i]])}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Next we need to calculate the cumulative sum per country across Lowder's farm size classes.  To do this we first convert the data from wide to long format, and set classes for countries without data to zero area.
 
-\begin{Schunk}
-\begin{Sinput}
-> lwd <- melt(lwd, id.vars = c('country'))
-> lwd[is.na(lwd)] <- 0
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{lwd} \hlkwb{<-} \hlkwd{melt}\hlstd{(lwd,} \hlkwc{id.vars} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{'country'}\hlstd{))}
+\hlstd{lwd[}\hlkwd{is.na}\hlstd{(lwd)]} \hlkwb{<-} \hlnum{0}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Then we calculate the proportional agricultural area for each farm size class for each country. We note that Lowder contains some countries without farm size distributions and some countries do not have a distribution for each farm size class, and so we remove those cases here.
 
-\begin{Schunk}
-\begin{Sinput}
-> lwd <- lwd %>% 
-+   group_by(country) %>% 
-+   mutate(total = sum(value),
-+          perc = value / total) %>%
-+    filter(value > 0) %>%
-+   select(country, variable, perc)
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{lwd} \hlkwb{<-} \hlstd{lwd} \hlopt{%>%}
+  \hlkwd{group_by}\hlstd{(country)} \hlopt{%>%}
+  \hlkwd{mutate}\hlstd{(}\hlkwc{total} \hlstd{=} \hlkwd{sum}\hlstd{(value),}
+         \hlkwc{perc} \hlstd{= value} \hlopt{/} \hlstd{total)} \hlopt{%>%}
+   \hlkwd{filter}\hlstd{(value} \hlopt{>} \hlnum{0}\hlstd{)} \hlopt{%>%}
+  \hlkwd{select}\hlstd{(country, variable, perc)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Finally, cast dataframe back into wide form.
-\begin{Schunk}
-\begin{Sinput}
-> lwd <- dcast(lwd, country ~ variable)
-> write.csv(lwd, 'data/tmp/lwd.csv')
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{lwd} \hlkwb{<-} \hlkwd{dcast}\hlstd{(lwd, country} \hlopt{~} \hlstd{variable)}
+\hlkwd{write.csv}\hlstd{(lwd,} \hlstr{'data/tmp/lwd.csv'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Global agricultural area}
 
-We use Ramankutty's 10 km\textsuperscript{2} cropland map (crop, hereafter) and pastureland map (pasture, hereafter) as our reference layer of the distribution of agricultural land at the subnational level.  We read in these files here and unionize the crop and pasture maps to create an agricultural land raster (ag, hereafter).
+We use Ramankutty's 0.083 degree cropland map (crop, hereafter) and pastureland map (pasture, hereafter) as our reference layer of the distribution of agricultural land at the subnational level.  We read in these files here and unionize the crop and pasture maps to create an agricultural land raster (ag, hereafter).
 
-\begin{Schunk}
-\begin{Sinput}
-> crop <- paste0('data/Ramankutty_2008_cropland/',
-+                 'CroplandPastureArea2000_Geotiff/',
-+                 'Cropland2000_5m.tif')
-> pasture <- paste0('data/Ramankutty_2008_cropland/',
-+                   'CroplandPastureArea2000_Geotiff/',
-+                   'Pasture2000_5m.tif')
-> crop <- raster(crop)
-> pasture <- raster(pasture)
-> # Here we take a union of crop and pasture areas
-> # Set NA to 0, ensure same origin, find sum 
-> crop_tmp <- crop
-> pasture_tmp <- pasture
-> crop_tmp[is.na(crop_tmp)] <- 0
-> pasture_tmp[is.na(pasture_tmp)] <- 0
-> origin(crop_tmp) <- origin(pasture_tmp) <- c(0.0, 0.0)
-> ag <-mosaic(crop_tmp, pasture_tmp, fun = sum)
-> ag[ag[] == 0] <- NA 
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{crop} \hlkwb{<-} \hlkwd{paste0}\hlstd{(}\hlstr{'data/Ramankutty_2008_cropland/'}\hlstd{,}
+                \hlstr{'CroplandPastureArea2000_Geotiff/'}\hlstd{,}
+                \hlstr{'Cropland2000_5m.tif'}\hlstd{)}
+
+\hlstd{pasture} \hlkwb{<-} \hlkwd{paste0}\hlstd{(}\hlstr{'data/Ramankutty_2008_cropland/'}\hlstd{,}
+                  \hlstr{'CroplandPastureArea2000_Geotiff/'}\hlstd{,}
+                  \hlstr{'Pasture2000_5m.tif'}\hlstd{)}
+
+\hlstd{crop} \hlkwb{<-} \hlkwd{raster}\hlstd{(crop)}
+\hlstd{pasture} \hlkwb{<-} \hlkwd{raster}\hlstd{(pasture)}
+
+\hlcom{# Here we take a union of crop and pasture areas}
+\hlcom{# Set NA to 0, ensure same origin, find sum }
+\hlstd{crop_tmp} \hlkwb{<-} \hlstd{crop}
+\hlstd{pasture_tmp} \hlkwb{<-} \hlstd{pasture}
+\hlstd{crop_tmp[}\hlkwd{is.na}\hlstd{(crop_tmp)]} \hlkwb{<-} \hlnum{0}
+\hlstd{pasture_tmp[}\hlkwd{is.na}\hlstd{(pasture_tmp)]} \hlkwb{<-} \hlnum{0}
+\hlkwd{origin}\hlstd{(crop_tmp)} \hlkwb{<-} \hlkwd{origin}\hlstd{(pasture_tmp)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{0.0}\hlstd{,} \hlnum{0.0}\hlstd{)}
+\hlstd{ag} \hlkwb{<-}\hlkwd{mosaic}\hlstd{(crop_tmp, pasture_tmp,} \hlkwc{fun} \hlstd{= sum)}
+\hlstd{ag[ag[]} \hlopt{==} \hlnum{0}\hlstd{]} \hlkwb{<-} \hlnum{NA}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Global field sizes}
 
-Here we interpolate the crowd-sourced field size data point data onto Ramankutty's agricultural area data. While the original sampling frame for this field size was on a unionized cropland map, we extend the distribution here in an attempt to better match and account for the inclusion of non-cropland in Lowder's farm size data (noting that later we will clip the resulting product to cropland only).  We use kk-nearest neighbor (kkNN) on a 0.01 degree grid (kkNN is a weighted variant of kNN that we use to try to account as best as possible for Lesiv's sparsely sampled points in Africa).
+Here we interpolate the crowd-sourced field size data point data onto Ramankutty's agricultural area data. While the original sampling frame for this field size was on a unionized cropland map, we extend the distribution here in an attempt to better match and account for the inclusion of non-cropland in Lowder's farm size data (noting that later we will clip the resulting product to cropland only). We use kk-nearest neighbor (kkNN), a weighted variant of kNN that we use to try to account as best as possible for Lesiv’s sparsely sampled points in some locations, e.g. Africa).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Read in Data}
 
 First, we read in the estimated dominant field sizes point data and subset to not include NA values or values coded as having no fields.
-\begin{Schunk}
-\begin{Sinput}
-> fs <- read.csv("data/Fritz_2019/Global Field Sizes/estimated_dominant_field_sizes.csv")
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fs} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(}\hlstr{"data/Fritz_2019/Global Field Sizes/estimated_dominant_field_sizes.csv"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Pre-process Data}
@@ -227,103 +308,129 @@ We recode Lesiv's data according to their coding as detailed below. And then con
   \item NA - skipped
 \end{itemize}
 
-\begin{Schunk}
-\begin{Sinput}
-> fs[which(fs$field_size == 3507), 5] <- NA
-> fs_clean <- fs %>%
-+   na.omit() %>%
-+   dplyr::mutate(field_size_fac = as.factor(field_size)) %>%
-+   dplyr::mutate(fs_verbatim_fac = recode(field_size_fac,
-+                                          "3502" = "very large",
-+                                          "3503" = "large",
-+                                          "3504" = "medium",
-+                                          "3505" = "small",
-+                                          "3506" = "very small"))%>%
-+   dplyr::select(-rowid,-sampelid) %>%
-+   st_as_sf(coords = c("x", "y"),
-+            crs = "+proj=longlat +ellps=WGS84")
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fs[}\hlkwd{which}\hlstd{(fs}\hlopt{$}\hlstd{field_size} \hlopt{==} \hlnum{3507}\hlstd{),} \hlnum{5}\hlstd{]} \hlkwb{<-} \hlnum{NA}
+
+\hlstd{fs_clean} \hlkwb{<-} \hlstd{fs} \hlopt{%>%}
+  \hlkwd{na.omit}\hlstd{()} \hlopt{%>%}
+  \hlstd{dplyr}\hlopt{::}\hlkwd{mutate}\hlstd{(}\hlkwc{field_size_fac} \hlstd{=} \hlkwd{as.factor}\hlstd{(field_size))} \hlopt{%>%}
+  \hlstd{dplyr}\hlopt{::}\hlkwd{mutate}\hlstd{(}\hlkwc{fs_verbatim_fac} \hlstd{=} \hlkwd{recode}\hlstd{(field_size_fac,}
+                                         \hlstr{"3502"} \hlstd{=} \hlstr{"very large"}\hlstd{,}
+                                         \hlstr{"3503"} \hlstd{=} \hlstr{"large"}\hlstd{,}
+                                         \hlstr{"3504"} \hlstd{=} \hlstr{"medium"}\hlstd{,}
+                                         \hlstr{"3505"} \hlstd{=} \hlstr{"small"}\hlstd{,}
+                                         \hlstr{"3506"} \hlstd{=} \hlstr{"very small"}\hlstd{))}\hlopt{%>%}
+  \hlstd{dplyr}\hlopt{::}\hlkwd{select}\hlstd{(}\hlopt{-}\hlstd{rowid,}\hlopt{-}\hlstd{sampelid)} \hlopt{%>%}
+  \hlkwd{st_as_sf}\hlstd{(}\hlkwc{coords} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"x"}\hlstd{,} \hlstr{"y"}\hlstd{),}
+           \hlkwc{crs} \hlstd{=} \hlstr{"+proj=longlat +ellps=WGS84"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Interpolate}
 
 We make a target raster grid to interpolate onto using the agricultural area raster. We use a very simple method of interpolation based on the latitude and longitude. 
 
-\begin{Schunk}
-\begin{Sinput}
-> ag_GR0 <- ag
-> ag_GR0[] <- ifelse(ag_GR0[] > 0, 1, NA)
-> target_pts <- rasterToPoints(ag, spatial = TRUE)
-> target_pts_agGR0 <- rasterToPoints(ag_GR0, spatial = TRUE)
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{ag_GR0} \hlkwb{<-} \hlstd{ag}
+\hlstd{ag_GR0[]} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(ag_GR0[]} \hlopt{>} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{NA}\hlstd{)}
+\hlstd{target_pts} \hlkwb{<-} \hlkwd{rasterToPoints}\hlstd{(ag,} \hlkwc{spatial} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\hlstd{target_pts_agGR0} \hlkwb{<-} \hlkwd{rasterToPoints}\hlstd{(ag_GR0,} \hlkwc{spatial} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We then train the kkNN model using different types of kernels and number of points used in the classification procedure. We use 10 fold cross validation to identify the best parameters to use in the final model (noting that CV does not approximate the test error as would be estimated using an independent hold-out set).
 
-\begin{Schunk}
-\begin{Sinput}
-> fs_train <- data.frame(field_size = fs_clean$fs_verbatim_fac,
-+                        x = st_coordinates(fs_clean)[,1],
-+                        y = st_coordinates(fs_clean)[,2])
-> fs_interp_train <- kknn::train.kknn(field_size ~.,
-+                                     data = fs_train,
-+                                     ks = seq(5,51, 5),
-+                                     distance = 2,
-+                                     kernel = c("gaussian",
-+                                                "triangular",
-+                                                "rectangular",
-+                                                "epanechnikov",
-+                                                "optimal"),
-+                                     kcv = 10)
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fs_train} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{field_size} \hlstd{= fs_clean}\hlopt{$}\hlstd{fs_verbatim_fac,}
+                       \hlkwc{x} \hlstd{=} \hlkwd{st_coordinates}\hlstd{(fs_clean)[,}\hlnum{1}\hlstd{],}
+                       \hlkwc{y} \hlstd{=} \hlkwd{st_coordinates}\hlstd{(fs_clean)[,}\hlnum{2}\hlstd{])}
 
-Next we summarize and plot the results of the model fitting. We note the the minimal classifications error is 0.429748947326607. Crudely, with 5 classes we would expect a raw misclassification error of 80\%, which suggests the model has in the best case helped reduce blind uncertainty by around 53.7186184158258\%. We also plot the error from the different models below. 
+\hlstd{fs_interp_train} \hlkwb{<-} \hlstd{kknn}\hlopt{::}\hlkwd{train.kknn}\hlstd{(field_size} \hlopt{~}\hlstd{.,}
+                                    \hlkwc{data} \hlstd{= fs_train,}
+                                    \hlkwc{ks} \hlstd{=} \hlkwd{seq}\hlstd{(}\hlnum{5}\hlstd{,}\hlnum{51}\hlstd{,} \hlnum{5}\hlstd{),}
+                                    \hlkwc{distance} \hlstd{=} \hlnum{2}\hlstd{,}
+                                    \hlkwc{kernel} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"gaussian"}\hlstd{,}
+                                               \hlstr{"triangular"}\hlstd{,}
+                                               \hlstr{"rectangular"}\hlstd{,}
+                                               \hlstr{"epanechnikov"}\hlstd{,}
+                                               \hlstr{"optimal"}\hlstd{),}
+                                    \hlkwc{kcv} \hlstd{=} \hlnum{10}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
-Future versions improvements to this model may be made through identifying ancillary features that do a better job of predicting field size classes than simply latitude and longitude alone. Similarly, using an ordinal response, instead of the nominal response defaulted here, is likely to improve predictions also.
+Next we summarize and plot the results of the model fitting. We also plot the error from the
+different models below. We note the minimal misclassification error is 0.43. Crudely, with a balanced dataset of 5 classes you would expect a null misclassification error of 0.8, and so under this special case the best model halves uncertainty in predictions from a random classifier. Future versions improvements to this model may be made through using haversine distance, or identifying ancillary features that do a better job of predicting field size classes. Similarly, using an ordinal response, instead of the nominal response defaulted here, may improve predictions also.
 
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=0.6\linewidth]{figure/plotknnres-1} 
+
+}
+
+\caption[kkNN results of field size interpolation]{kkNN results of field size interpolation}\label{fig:plotknnres}
+\end{figure}
+
+\end{knitrout}
 
 We use the best fitting model parameters to predict the field size classes across the agricultural area grid, and then extract the fitted values and the associated probabilities.
-\begin{Schunk}
-\begin{Sinput}
-> fs_interp_final <- kknn::kknn(field_size ~ .,
-+                               train = fs_train,
-+                               test = target_pts_agGR0,
-+                               kernel = fs_interp_train$best.parameters$kernel,
-+                               k = fs_interp_train$best.parameters$k)
-> target_pts_agGR0_res <- target_pts_agGR0 %>%
-+   # extract the interpolated class at each
-+   # grid cell with the kknn::fitted function
-+   as.data.frame() %>%
-+   # only retain the probability of the
-+   # interpolated size class, discard the others
-+   mutate(field_size_fit = fitted(fs_interp_final),
-+          prob = apply(fs_interp_final$prob, 1, function(input) max(input)))
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fs_interp_final} \hlkwb{<-} \hlstd{kknn}\hlopt{::}\hlkwd{kknn}\hlstd{(field_size} \hlopt{~} \hlstd{.,}
+                              \hlkwc{train} \hlstd{= fs_train,}
+                              \hlkwc{test} \hlstd{= target_pts_agGR0,}
+                              \hlkwc{kernel} \hlstd{= fs_interp_train}\hlopt{$}\hlstd{best.parameters}\hlopt{$}\hlstd{kernel,}
+                              \hlkwc{k} \hlstd{= fs_interp_train}\hlopt{$}\hlstd{best.parameters}\hlopt{$}\hlstd{k)}
+
+\hlstd{target_pts_agGR0_res} \hlkwb{<-} \hlstd{target_pts_agGR0} \hlopt{%>%}
+  \hlcom{# extract the interpolated class at each}
+  \hlcom{# grid cell with the kknn::fitted function}
+  \hlkwd{as.data.frame}\hlstd{()} \hlopt{%>%}
+  \hlcom{# only retain the probability of the}
+  \hlcom{# interpolated size class, discard the others}
+  \hlkwd{mutate}\hlstd{(}\hlkwc{field_size_fit} \hlstd{=} \hlkwd{fitted}\hlstd{(fs_interp_final),}
+         \hlkwc{prob} \hlstd{=} \hlkwd{apply}\hlstd{(fs_interp_final}\hlopt{$}\hlstd{prob,} \hlnum{1}\hlstd{,} \hlkwa{function}\hlstd{(}\hlkwc{input}\hlstd{)} \hlkwd{max}\hlstd{(input)))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Rasterize}
 
 Here we convert results back to a raster and save the results of the fitted classes.
 
-\begin{Schunk}
-\begin{Sinput}
-> target_pts_agGR0_res_spdf <- target_pts_agGR0_res
-> coordinates(target_pts_agGR0_res_spdf) <- ~ x + y
-> fs_interp_final_ras <- rasterize(target_pts_agGR0_res_spdf,
-+                                  ag,
-+                                  as.integer(
-+                                  target_pts_agGR0_res_spdf$field_size_fit),
-+                                  progress = "text")
-> fs_interp_final_ras_prob <- rasterize(target_pts_agGR0_res_spdf,
-+                                       ag,
-+                                       target_pts_agGR0_res_spdf$prob,
-+                                       progress = "text")
-> lesiv <- fs_interp_final_ras
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{target_pts_agGR0_res_spdf} \hlkwb{<-} \hlstd{target_pts_agGR0_res}
+\hlkwd{coordinates}\hlstd{(target_pts_agGR0_res_spdf)} \hlkwb{<-} \hlopt{~} \hlstd{x} \hlopt{+} \hlstd{y}
+
+\hlstd{fs_interp_final_ras} \hlkwb{<-} \hlkwd{rasterize}\hlstd{(target_pts_agGR0_res_spdf,}
+                                 \hlstd{ag,}
+                                 \hlkwd{as.integer}\hlstd{(}
+                                 \hlstd{target_pts_agGR0_res_spdf}\hlopt{$}\hlstd{field_size_fit),}
+                                 \hlkwc{progress} \hlstd{=} \hlstr{"text"}\hlstd{)}
+
+\hlstd{fs_interp_final_ras_prob} \hlkwb{<-} \hlkwd{rasterize}\hlstd{(target_pts_agGR0_res_spdf,}
+                                      \hlstd{ag,}
+                                      \hlstd{target_pts_agGR0_res_spdf}\hlopt{$}\hlstd{prob,}
+                                      \hlkwc{progress} \hlstd{=} \hlstr{"text"}\hlstd{)}
+
+\hlstd{lesiv} \hlkwb{<-} \hlstd{fs_interp_final_ras}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -335,62 +442,72 @@ To run our algorithm to create a field size map we need to ensure all rasterized
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Convert to equal area}
 
-Here we set each dataset to have an equal area (Eckert IV) at a 8.4 km\textsuperscript{2} resolution. To interpolate, we use nearest neighbor for the categorical data and bilinear for the continuous data.
+Here we set each dataset to have an equal area (Eckert IV) at a 8.4 km x 8.4 km resolution. To interpolate, we use nearest neighbor for the categorical data and bilinear for the continuous data.
 
-\begin{Schunk}
-\begin{Sinput}
-> rast.list.ngb <- list(lesiv, world)
-> rast.list.bil <- list(crop, pasture, ag)
-> resValue <- 8439
-> rast.list.ngb.eq <- lapply(rast.list.ngb, function(x)
-+   projectRaster(
-+     x,
-+     res    = c(resValue, resValue),
-+     crs    = '+proj=eck4 +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0',
-+     method = 'ngb',
-+     over   = T))
-> rast.list.bil.eq <- lapply(rast.list.bil, function(x)
-+   projectRaster(
-+     x, 
-+     res    = c(resValue, resValue),
-+     crs    = '+proj=eck4 +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0',
-+     method = 'bilinear',
-+     over   = TRUE))
-> rast.list <- c(rast.list.ngb.eq, rast.list.bil.eq)  # Combine data
-> names(rast.list) <- c('lesiv', 'world', 'crop', 'pasture', 'ag')
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{rast.list.ngb} \hlkwb{<-} \hlkwd{list}\hlstd{(lesiv, world)}
+\hlstd{rast.list.bil} \hlkwb{<-} \hlkwd{list}\hlstd{(crop, pasture, ag)}
+
+\hlstd{resValue} \hlkwb{<-} \hlnum{8439}
+\hlstd{rast.list.ngb.eq} \hlkwb{<-} \hlkwd{lapply}\hlstd{(rast.list.ngb,} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)}
+  \hlkwd{projectRaster}\hlstd{(}
+    \hlstd{x,}
+    \hlkwc{res}    \hlstd{=} \hlkwd{c}\hlstd{(resValue, resValue),}
+    \hlkwc{crs}    \hlstd{=} \hlstr{'+proj=eck4 +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0'}\hlstd{,}
+    \hlkwc{method} \hlstd{=} \hlstr{'ngb'}\hlstd{,}
+    \hlkwc{over}   \hlstd{= T))}
+
+\hlstd{rast.list.bil.eq} \hlkwb{<-} \hlkwd{lapply}\hlstd{(rast.list.bil,} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)}
+  \hlkwd{projectRaster}\hlstd{(}
+    \hlstd{x,}
+    \hlkwc{res}    \hlstd{=} \hlkwd{c}\hlstd{(resValue, resValue),}
+    \hlkwc{crs}    \hlstd{=} \hlstr{'+proj=eck4 +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0'}\hlstd{,}
+    \hlkwc{method} \hlstd{=} \hlstr{'bilinear'}\hlstd{,}
+    \hlkwc{over}   \hlstd{=} \hlnum{TRUE}\hlstd{))}
+
+\hlstd{rast.list} \hlkwb{<-} \hlkwd{c}\hlstd{(rast.list.ngb.eq, rast.list.bil.eq)}  \hlcom{# Combine data}
+\hlkwd{names}\hlstd{(rast.list)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{'lesiv'}\hlstd{,} \hlstr{'world'}\hlstd{,} \hlstr{'crop'}\hlstd{,} \hlstr{'pasture'}\hlstd{,} \hlstr{'ag'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Set extents}
 
 Next, we need to make sure that all the rasters have the same spatial extents. The country boundaries include Antarctica, while the cropland/pastureland/ag and field size data do not (e.g., crop ymin is -8501789, while the country boundaries ymin is -8503388). To ensure all the datasets match we need to expand the cropland/pastureland/ag and Lesiv extents to match the country boundaries extent. This means extending the cropland/pastureland/ag and Lesiv data to also include the country boundary grid cells; we do this by adding rows of NA grid cells.
 
-\begin{Schunk}
-\begin{Sinput}
-> ex1 <- extent(rast.list$world)
-> # Extend
-> rast.list.ex <- lapply(rast.list,    
-+                        function(x) extend(x, ex1))
-> # Crop
-> rast.list.c  <- lapply(rast.list.ex, 
-+                        function(x) crop(x, ex1))
-> # Force equal extent
-> rast.list.et <- lapply(rast.list.c,  
-+                        function(x) setExtent(x, ex1,
-+                                              keepres = TRUE))
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{ex1} \hlkwb{<-} \hlkwd{extent}\hlstd{(rast.list}\hlopt{$}\hlstd{world)}
+
+\hlcom{# Extend}
+\hlstd{rast.list.ex} \hlkwb{<-} \hlkwd{lapply}\hlstd{(rast.list,}
+                       \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{extend}\hlstd{(x, ex1))}
+\hlcom{# Crop}
+\hlstd{rast.list.c}  \hlkwb{<-} \hlkwd{lapply}\hlstd{(rast.list.ex,}
+                       \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{crop}\hlstd{(x, ex1))}
+\hlcom{# Force equal extent}
+\hlstd{rast.list.et} \hlkwb{<-} \hlkwd{lapply}\hlstd{(rast.list.c,}
+                       \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{setExtent}\hlstd{(x, ex1,}
+                                             \hlkwc{keepres} \hlstd{=} \hlnum{TRUE}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Create stack}
 Now that all the layers' resolution, crs, and spatial extent are equal, we can create a raster stack and proceed with the analysis.
 
-\begin{Schunk}
-\begin{Sinput}
-> rast.all <- stack(rast.list.et)
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{rast.all} \hlkwb{<-} \hlkwd{stack}\hlstd{(rast.list.et)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -398,85 +515,100 @@ Now that all the layers' resolution, crs, and spatial extent are equal, we can c
 
 We now convert the data in the raster stack into a dataframe, which we will use for later analysis.
 
-\begin{Schunk}
-\begin{Sinput}
-> df <- raster::extract(rast.all, 1:ncell(rast.all), df = T)
-> df <- as.data.frame(df)
-> df$ID <- 1:nrow(df)
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df} \hlkwb{<-} \hlstd{raster}\hlopt{::}\hlkwd{extract}\hlstd{(rast.all,} \hlnum{1}\hlopt{:}\hlkwd{ncell}\hlstd{(rast.all),} \hlkwc{df} \hlstd{= T)}
+\hlstd{df} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(df)}
+\hlstd{df}\hlopt{$}\hlstd{ID} \hlkwb{<-} \hlnum{1}\hlopt{:}\hlkwd{nrow}\hlstd{(df)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Set any crop, pasture value under 0.01 to NA, to account for sparse agricultural areas.
-\begin{Schunk}
-\begin{Sinput}
-> df$crop <- ifelse(df$crop >= 0.01, df$crop, NA)
-> df$pasture <- ifelse(df$pasture >= 0.01, df$pasture, NA)
-> df$ag <- ifelse(df$ag >= 0.01, df$ag, NA)
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{df}\hlopt{$}\hlstd{crop} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(df}\hlopt{$}\hlstd{crop} \hlopt{>=} \hlnum{0.01}\hlstd{, df}\hlopt{$}\hlstd{crop,} \hlnum{NA}\hlstd{)}
+\hlstd{df}\hlopt{$}\hlstd{pasture} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(df}\hlopt{$}\hlstd{pasture} \hlopt{>=} \hlnum{0.01}\hlstd{, df}\hlopt{$}\hlstd{pasture,} \hlnum{NA}\hlstd{)}
+\hlstd{df}\hlopt{$}\hlstd{ag} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(df}\hlopt{$}\hlstd{ag} \hlopt{>=} \hlnum{0.01}\hlstd{, df}\hlopt{$}\hlstd{ag,} \hlnum{NA}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Next we add back in the country names (presently they are only country ISO3 IDs), then subset the data to only contain countries in the Lowder dataset (this speeds up processing).
-\begin{Schunk}
-\begin{Sinput}
-> world  <- getMap(resolution = 'low')
-> lookup <- as.data.frame(
-+   cbind(
-+     as.character(world@data[,'ISO3']),
-+     world@data[,'ADMIN'],
-+     as.character(world@data[,'ADMIN'])))
-> matched    <- lookup[match(df$world, lookup$V2), ]
-> df$ISO3    <- matched[[1]]
-> df$country <- matched[[3]]
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{world}  \hlkwb{<-} \hlkwd{getMap}\hlstd{(}\hlkwc{resolution} \hlstd{=} \hlstr{'low'}\hlstd{)}
+\hlstd{lookup} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(}
+  \hlkwd{cbind}\hlstd{(}
+    \hlkwd{as.character}\hlstd{(world}\hlopt{@}\hlkwc{data}\hlstd{[,}\hlstr{'ISO3'}\hlstd{]),}
+    \hlstd{world}\hlopt{@}\hlkwc{data}\hlstd{[,}\hlstr{'ADMIN'}\hlstd{],}
+    \hlkwd{as.character}\hlstd{(world}\hlopt{@}\hlkwc{data}\hlstd{[,}\hlstr{'ADMIN'}\hlstd{])))}
+
+\hlstd{matched}    \hlkwb{<-} \hlstd{lookup[}\hlkwd{match}\hlstd{(df}\hlopt{$}\hlstd{world, lookup}\hlopt{$}\hlstd{V2), ]}
+\hlstd{df}\hlopt{$}\hlstd{ISO3}    \hlkwb{<-} \hlstd{matched[[}\hlnum{1}\hlstd{]]}
+\hlstd{df}\hlopt{$}\hlstd{country} \hlkwb{<-} \hlstd{matched[[}\hlnum{3}\hlstd{]]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We then match Lowder's country names to the global country boundary country names.
-\begin{Schunk}
-\begin{Sinput}
-> countries <- data.frame(names = sort(unique(df$country)))
-> lwdNames  <- data.frame(names = unique(lwd$country))
-> lwdNames$names  <- str_trim(lwdNames$names)
-> lwdNames$indata <- lwdNames$names %in% unique(countries$name)
-> # List of names in lowder that do not match dataset's names
-> # note Guadeloupe, Martinique, Reunion has no data
-> # lwdNames[which(lwdNames$indata == FALSE), ]
-> 
-> changeFrom <- c('Korea Rep. of', 
-+                 "Lao People's Democratic Republic",
-+                 'Viet Nam',
-+                 'Serbia',
-+                 'Bahamas',
-+                 'Venezuela (Bolivarian Republic of)',
-+                 'St. Kitts & Nevis',
-+                 'Iran (Islamic Republic of)',
-+                 "Côte d'Ivoire",
-+                 'Virgin Islands United States')
-> changeTo   <- c('South Korea',
-+                 'Laos',
-+                 'Vietnam',
-+                 'Republic of Serbia',
-+                 'The Bahamas',
-+                 'Venezuela',
-+                 'Saint Kitts and Nevis',
-+                 'Iran',
-+                 'Ivory Coast',
-+                 'United States Virgin Islands')
-> require(plyr)
-> lwd$country <- mapvalues(str_trim(lwd$country),
-+                          from = changeFrom,
-+                          to   = changeTo)
-> detach('package:plyr')
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{countries} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{names} \hlstd{=} \hlkwd{sort}\hlstd{(}\hlkwd{unique}\hlstd{(df}\hlopt{$}\hlstd{country)))}
+\hlstd{lwdNames}  \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}\hlkwc{names} \hlstd{=} \hlkwd{unique}\hlstd{(lwd}\hlopt{$}\hlstd{country))}
+\hlstd{lwdNames}\hlopt{$}\hlstd{names}  \hlkwb{<-} \hlkwd{str_trim}\hlstd{(lwdNames}\hlopt{$}\hlstd{names)}
+\hlstd{lwdNames}\hlopt{$}\hlstd{indata} \hlkwb{<-} \hlstd{lwdNames}\hlopt{$}\hlstd{names} \hlopt{%in%} \hlkwd{unique}\hlstd{(countries}\hlopt{$}\hlstd{name)}
+
+\hlcom{# List of names in lowder that do not match dataset's names}
+\hlcom{# note Guadeloupe, Martinique, Reunion has no data}
+\hlcom{# lwdNames[which(lwdNames$indata == FALSE), ]}
+
+\hlstd{changeFrom} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{'Korea Rep. of'}\hlstd{,}
+                \hlstr{"Lao People's Democratic Republic"}\hlstd{,}
+                \hlstr{'Viet Nam'}\hlstd{,}
+                \hlstr{'Serbia'}\hlstd{,}
+                \hlstr{'Bahamas'}\hlstd{,}
+                \hlstr{'Venezuela (Bolivarian Republic of)'}\hlstd{,}
+                \hlstr{'St. Kitts & Nevis'}\hlstd{,}
+                \hlstr{'Iran (Islamic Republic of)'}\hlstd{,}
+                \hlstr{"Côte d'Ivoire"}\hlstd{,}
+                \hlstr{'Virgin Islands United States'}\hlstd{)}
+
+\hlstd{changeTo}   \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{'South Korea'}\hlstd{,}
+                \hlstr{'Laos'}\hlstd{,}
+                \hlstr{'Vietnam'}\hlstd{,}
+                \hlstr{'Republic of Serbia'}\hlstd{,}
+                \hlstr{'The Bahamas'}\hlstd{,}
+                \hlstr{'Venezuela'}\hlstd{,}
+                \hlstr{'Saint Kitts and Nevis'}\hlstd{,}
+                \hlstr{'Iran'}\hlstd{,}
+                \hlstr{'Ivory Coast'}\hlstd{,}
+                \hlstr{'United States Virgin Islands'}\hlstd{)}
+
+\hlkwd{require}\hlstd{(plyr)}
+\hlstd{lwd}\hlopt{$}\hlstd{country} \hlkwb{<-} \hlkwd{mapvalues}\hlstd{(}\hlkwd{str_trim}\hlstd{(lwd}\hlopt{$}\hlstd{country),}
+                         \hlkwc{from} \hlstd{= changeFrom,}
+                         \hlkwc{to}   \hlstd{= changeTo)}
+\hlkwd{detach}\hlstd{(}\hlstr{'package:plyr'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Subset the dataset to only the countries containing farm size distributions.
-\begin{Schunk}
-\begin{Sinput}
-> lwdNames <- unique(lwd$country)
-> df_lwd <- df[which(df$country %in% lwdNames), ]
-> df_not_lwd <- df[which(!df$country %in% lwdNames), ]
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{lwdNames} \hlkwb{<-} \hlkwd{unique}\hlstd{(lwd}\hlopt{$}\hlstd{country)}
+\hlstd{df_lwd} \hlkwb{<-} \hlstd{df[}\hlkwd{which}\hlstd{(df}\hlopt{$}\hlstd{country} \hlopt{%in%} \hlstd{lwdNames), ]}
+\hlstd{df_not_lwd} \hlkwb{<-} \hlstd{df[}\hlkwd{which}\hlstd{(}\hlopt{!}\hlstd{df}\hlopt{$}\hlstd{country} \hlopt{%in%} \hlstd{lwdNames), ]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
 
 
 
@@ -507,118 +639,126 @@ Here are the steps we used to create the farm size map, with uncertainty at the 
 
 Steps 1 to 6 are written below.
 
-\begin{Schunk}
-\begin{Sinput}
-> cumsumSkipNA <- function(x) {
-+     FUNC <- match.fun('cumsum')
-+     x[!is.na(x)] <- FUNC(x[!is.na(x)])
-+     return(x)
-+ }
-> df_lwd$lesiv <- factor(df_lwd$lesiv)
-> levels(df_lwd$lesiv) <- c('5', '4', '3', '2', '1')
-> df_lwd$lesiv <- as.integer(as.character(df_lwd$lesiv))
-> steps_1_6 <- function(df_lwd) {
-+   
-+   dat <- df_lwd %>% 
-+     mutate(pseudorandom = sample(1:n(), n(), replace = F))  %>%
-+     arrange(country, lesiv, pseudorandom) %>%
-+     group_by(country) %>%
-+     mutate(crop = crop * resValue^2 * 0.0001,       # new
-+            pasture = pasture * resValue^2 * 0.0001, # new
-+            ag = crop + pasture,                     # new
-+            ag_area = ag * resValue^2 * 0.0001, # original was this line only
-+            cumsum_area = cumsumSkipNA(ag_area),
-+            prop_sums = ifelse(
-+                is.na(cumsum_area), 
-+                NA,
-+                cumsum_area / max(cumsum_area, na.rm = T)
-+                )
-+     )
-+   
-+   return(dat)
-+ }
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{cumsumSkipNA} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+    \hlstd{FUNC} \hlkwb{<-} \hlkwd{match.fun}\hlstd{(}\hlstr{'cumsum'}\hlstd{)}
+    \hlstd{x[}\hlopt{!}\hlkwd{is.na}\hlstd{(x)]} \hlkwb{<-} \hlkwd{FUNC}\hlstd{(x[}\hlopt{!}\hlkwd{is.na}\hlstd{(x)])}
+    \hlkwd{return}\hlstd{(x)}
+\hlstd{\}}
+
+\hlstd{df_lwd}\hlopt{$}\hlstd{lesiv} \hlkwb{<-} \hlkwd{factor}\hlstd{(df_lwd}\hlopt{$}\hlstd{lesiv)}
+\hlkwd{levels}\hlstd{(df_lwd}\hlopt{$}\hlstd{lesiv)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{'5'}\hlstd{,} \hlstr{'4'}\hlstd{,} \hlstr{'3'}\hlstd{,} \hlstr{'2'}\hlstd{,} \hlstr{'1'}\hlstd{)}
+\hlstd{df_lwd}\hlopt{$}\hlstd{lesiv} \hlkwb{<-} \hlkwd{as.integer}\hlstd{(}\hlkwd{as.character}\hlstd{(df_lwd}\hlopt{$}\hlstd{lesiv))}
+
+
+\hlstd{steps_1_6} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{df_lwd}\hlstd{) \{}
+
+  \hlstd{dat} \hlkwb{<-} \hlstd{df_lwd} \hlopt{%>%}
+    \hlkwd{mutate}\hlstd{(}\hlkwc{pseudorandom} \hlstd{=} \hlkwd{sample}\hlstd{(}\hlnum{1}\hlopt{:}\hlkwd{n}\hlstd{(),} \hlkwd{n}\hlstd{(),} \hlkwc{replace} \hlstd{= F))}  \hlopt{%>%}
+    \hlkwd{arrange}\hlstd{(country, lesiv, pseudorandom)} \hlopt{%>%}
+    \hlkwd{group_by}\hlstd{(country)} \hlopt{%>%}
+    \hlkwd{mutate}\hlstd{(}\hlkwc{crop} \hlstd{= crop} \hlopt{*} \hlstd{resValue}\hlopt{^}\hlnum{2} \hlopt{*} \hlnum{0.0001}\hlstd{,}       \hlcom{# new}
+           \hlkwc{pasture} \hlstd{= pasture} \hlopt{*} \hlstd{resValue}\hlopt{^}\hlnum{2} \hlopt{*} \hlnum{0.0001}\hlstd{,} \hlcom{# new}
+           \hlkwc{ag} \hlstd{= crop} \hlopt{+} \hlstd{pasture,}                     \hlcom{# new}
+           \hlkwc{ag_area} \hlstd{= ag} \hlopt{*} \hlstd{resValue}\hlopt{^}\hlnum{2} \hlopt{*} \hlnum{0.0001}\hlstd{,} \hlcom{# original was this line only}
+           \hlkwc{cumsum_area} \hlstd{=} \hlkwd{cumsumSkipNA}\hlstd{(ag_area),}
+           \hlkwc{prop_sums} \hlstd{=} \hlkwd{ifelse}\hlstd{(}
+               \hlkwd{is.na}\hlstd{(cumsum_area),}
+               \hlnum{NA}\hlstd{,}
+               \hlstd{cumsum_area} \hlopt{/} \hlkwd{max}\hlstd{(cumsum_area,} \hlkwc{na.rm} \hlstd{= T)}
+               \hlstd{)}
+    \hlstd{)}
+
+  \hlkwd{return}\hlstd{(dat)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Step 7 is written below.
 
-\begin{Schunk}
-\begin{Sinput}
-> cumsumSkipNA <- function(x) {
-+     FUNC <- match.fun('cumsum')
-+     x[!is.na(x)] <- FUNC(x[!is.na(x)])
-+     return(x)
-+ }
-> step_7 <- function(dat) {
-+   
-+   tmp <- lwd[, 2:length(lwd)]
-+   tmp <- t(tmp)
-+   tmp <- apply(tmp, FUN = function(x) cumsumSkipNA(x), MARGIN = 2)
-+   tmp <- t(tmp)
-+   tmp <- as.data.frame(tmp)
-+   tmp$country <- lwd$country
-+   
-+   dat <- merge(dat, tmp, by = 'country')
-+   
-+   for (x in unique(dat$country)) {
-+       
-+       tmp <- dat[which(dat$country == x), ]
-+       
-+       tmp$farm <- ifelse(tmp$prop_sums <= tmp$`0_1`
-+                          & !is.na(tmp$`0_1`),
-+                          '0_1',
-+                   ifelse(tmp$prop_sums <= tmp$`1_2` 
-+                          & !is.na(tmp$`1_2`),
-+                          '1_2', 
-+                   ifelse(tmp$prop_sums <= tmp$`2_5` 
-+                          & !is.na(tmp$`2_5`),
-+                          '2_5',
-+                   ifelse(tmp$prop_sums <= tmp$`5_10` 
-+                          & !is.na(tmp$`5_10`),
-+                          '5_10',
-+                   ifelse(tmp$prop_sums <= tmp$`10_20` 
-+                          & !is.na(tmp$`10_20`),
-+                          '10_20',
-+                   ifelse(tmp$prop_sums <= tmp$`20_50`
-+                          & !is.na(tmp$`20_50`),
-+                          '20_50',
-+                   ifelse(tmp$prop_sums <= tmp$`50_100`
-+                          & !is.na(tmp$`50_100`),
-+                          '50_100',
-+                   ifelse(tmp$prop_sums <= tmp$`100_200` 
-+                          & !is.na(tmp$`100_200`),
-+                          '100_200',
-+                   ifelse(tmp$prop_sums <= tmp$`200_500` 
-+                          & !is.na(tmp$`200_500`),
-+                          '200_500',
-+                   ifelse(tmp$prop_sums <= tmp$`500_1000` 
-+                          & !is.na(tmp$`500_1000`),
-+                          '500_1000',
-+                   ifelse(tmp$prop_sums <= tmp$`1000_5000` 
-+                          & !is.na(tmp$`1000_5000`),
-+                          '1000_5000', 
-+                          '1000_5000'
-+                          )))))))))))
-+     
-+       if (x == as.character(unique(dat$country)[1])) {
-+         out <- tmp
-+       } else {
-+         out <- rbind(out, tmp)
-+       }
-+   }
-+   
-+   out <- out[,c(2,length(out))]
-+   
-+   dat <- merge(df, out, 
-+                by = 'ID', 
-+                all.x = T, 
-+                all.y = T)
-+   
-+   return(dat)
-+ 
-+ }
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{cumsumSkipNA} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) \{}
+    \hlstd{FUNC} \hlkwb{<-} \hlkwd{match.fun}\hlstd{(}\hlstr{'cumsum'}\hlstd{)}
+    \hlstd{x[}\hlopt{!}\hlkwd{is.na}\hlstd{(x)]} \hlkwb{<-} \hlkwd{FUNC}\hlstd{(x[}\hlopt{!}\hlkwd{is.na}\hlstd{(x)])}
+    \hlkwd{return}\hlstd{(x)}
+\hlstd{\}}
+
+\hlstd{step_7} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{dat}\hlstd{) \{}
+
+  \hlstd{tmp} \hlkwb{<-} \hlstd{lwd[,} \hlnum{2}\hlopt{:}\hlkwd{length}\hlstd{(lwd)]}
+  \hlstd{tmp} \hlkwb{<-} \hlkwd{t}\hlstd{(tmp)}
+  \hlstd{tmp} \hlkwb{<-} \hlkwd{apply}\hlstd{(tmp,} \hlkwc{FUN} \hlstd{=} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)} \hlkwd{cumsumSkipNA}\hlstd{(x),} \hlkwc{MARGIN} \hlstd{=} \hlnum{2}\hlstd{)}
+  \hlstd{tmp} \hlkwb{<-} \hlkwd{t}\hlstd{(tmp)}
+  \hlstd{tmp} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(tmp)}
+  \hlstd{tmp}\hlopt{$}\hlstd{country} \hlkwb{<-} \hlstd{lwd}\hlopt{$}\hlstd{country}
+
+  \hlstd{dat} \hlkwb{<-} \hlkwd{merge}\hlstd{(dat, tmp,} \hlkwc{by} \hlstd{=} \hlstr{'country'}\hlstd{)}
+
+  \hlkwa{for} \hlstd{(x} \hlkwa{in} \hlkwd{unique}\hlstd{(dat}\hlopt{$}\hlstd{country)) \{}
+
+      \hlstd{tmp} \hlkwb{<-} \hlstd{dat[}\hlkwd{which}\hlstd{(dat}\hlopt{$}\hlstd{country} \hlopt{==} \hlstd{x), ]}
+
+      \hlstd{tmp}\hlopt{$}\hlstd{farm} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`0_1`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`0_1`),}
+                         \hlstr{'0_1'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`1_2`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`1_2`),}
+                         \hlstr{'1_2'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`2_5`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`2_5`),}
+                         \hlstr{'2_5'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`5_10`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`5_10`),}
+                         \hlstr{'5_10'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`10_20`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`10_20`),}
+                         \hlstr{'10_20'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`20_50`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`20_50`),}
+                         \hlstr{'20_50'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`50_100`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`50_100`),}
+                         \hlstr{'50_100'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`100_200`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`100_200`),}
+                         \hlstr{'100_200'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`200_500`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`200_500`),}
+                         \hlstr{'200_500'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`500_1000`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`500_1000`),}
+                         \hlstr{'500_1000'}\hlstd{,}
+                  \hlkwd{ifelse}\hlstd{(tmp}\hlopt{$}\hlstd{prop_sums} \hlopt{<=} \hlstd{tmp}\hlopt{$}\hlstd{`1000_5000`}
+                         \hlopt{& !}\hlkwd{is.na}\hlstd{(tmp}\hlopt{$}\hlstd{`1000_5000`),}
+                         \hlstr{'1000_5000'}\hlstd{,}
+                         \hlstr{'1000_5000'}
+                         \hlstd{)))))))))))}
+
+      \hlkwa{if} \hlstd{(x} \hlopt{==} \hlkwd{as.character}\hlstd{(}\hlkwd{unique}\hlstd{(dat}\hlopt{$}\hlstd{country)[}\hlnum{1}\hlstd{])) \{}
+        \hlstd{out} \hlkwb{<-} \hlstd{tmp}
+      \hlstd{\}} \hlkwa{else} \hlstd{\{}
+        \hlstd{out} \hlkwb{<-} \hlkwd{rbind}\hlstd{(out, tmp)}
+      \hlstd{\}}
+  \hlstd{\}}
+
+  \hlstd{out} \hlkwb{<-} \hlstd{out[,}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlkwd{length}\hlstd{(out))]}
+
+  \hlstd{dat} \hlkwb{<-} \hlkwd{merge}\hlstd{(df, out,}
+               \hlkwc{by} \hlstd{=} \hlstr{'ID'}\hlstd{,}
+               \hlkwc{all.x} \hlstd{= T,}
+               \hlkwc{all.y} \hlstd{= T)}
+
+  \hlkwd{return}\hlstd{(dat)}
+
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 Step 8 is written below. For countries not in Lowder, we hard code the farm size matched to that field size class. We take the upper end of the given range and match it to Lesiv's codes (e.g., code 3502 becomes 200 ha)
@@ -637,89 +777,95 @@ Step 8 is written below. For countries not in Lowder, we hard code the farm size
 NA - 3507 - no fields;
 
 
-\begin{Schunk}
-\begin{Sinput}
-> step_8 <- function(dat) {
-+   
-+   field_2_farm <- data.frame(
-+     lesiv = c(1,2,3,4,5),
-+     # lesiv = c(5,4,3,2,1),
-+     farm_avg = c('100_200', 
-+                  '50_100',
-+                  '5_10',
-+                  '1_2',
-+                  '0_1'))
-+   
-+   dat <- merge(dat, field_2_farm, by = 'lesiv', all.x = T)
-+   
-+   # Make sure that any inf are NA
-+   dat2 <- dat %>% rationalize()
-+   
-+   # Make sure farm and farm_avg cats are same type
-+   dat$farm <- as.character(dat$farm)
-+   dat$farm_avg <- as.character(dat$farm_avg)
-+   
-+   dat$farm_final <- ifelse(dat$ag >= 0.01 & !is.na(dat$farm), 
-+                            dat$farm,
-+                     ifelse(dat$ag >= 0.01 & !is.na(dat$lesiv), 
-+                            dat$farm_avg, NA))
-+   return(dat)
-+ }
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{step_8} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{dat}\hlstd{) \{}
+
+  \hlstd{field_2_farm} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(}
+    \hlkwc{lesiv} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{5}\hlstd{),}
+    \hlcom{# lesiv = c(5,4,3,2,1),}
+    \hlkwc{farm_avg} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{'100_200'}\hlstd{,}
+                 \hlstr{'50_100'}\hlstd{,}
+                 \hlstr{'5_10'}\hlstd{,}
+                 \hlstr{'1_2'}\hlstd{,}
+                 \hlstr{'0_1'}\hlstd{))}
+
+  \hlstd{dat} \hlkwb{<-} \hlkwd{merge}\hlstd{(dat, field_2_farm,} \hlkwc{by} \hlstd{=} \hlstr{'lesiv'}\hlstd{,} \hlkwc{all.x} \hlstd{= T)}
+
+  \hlcom{# Make sure that any inf are NA}
+  \hlstd{dat2} \hlkwb{<-} \hlstd{dat} \hlopt{%>%} \hlkwd{rationalize}\hlstd{()}
+
+  \hlcom{# Make sure farm and farm_avg cats are same type}
+  \hlstd{dat}\hlopt{$}\hlstd{farm} \hlkwb{<-} \hlkwd{as.character}\hlstd{(dat}\hlopt{$}\hlstd{farm)}
+  \hlstd{dat}\hlopt{$}\hlstd{farm_avg} \hlkwb{<-} \hlkwd{as.character}\hlstd{(dat}\hlopt{$}\hlstd{farm_avg)}
+
+  \hlstd{dat}\hlopt{$}\hlstd{farm_final} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(dat}\hlopt{$}\hlstd{ag} \hlopt{>=} \hlnum{0.01} \hlopt{& !}\hlkwd{is.na}\hlstd{(dat}\hlopt{$}\hlstd{farm),}
+                           \hlstd{dat}\hlopt{$}\hlstd{farm,}
+                    \hlkwd{ifelse}\hlstd{(dat}\hlopt{$}\hlstd{ag} \hlopt{>=} \hlnum{0.01} \hlopt{& !}\hlkwd{is.na}\hlstd{(dat}\hlopt{$}\hlstd{lesiv),}
+                           \hlstd{dat}\hlopt{$}\hlstd{farm_avg,} \hlnum{NA}\hlstd{))}
+  \hlkwd{return}\hlstd{(dat)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Step 9: Generate farm size raster
 
-\begin{Schunk}
-\begin{Sinput}
-> step_9 <- function(dat, x = 'farm_final') {
-+   # Places farm size values into a raster
-+   # Params:
-+   #   df
-+   # Return:
-+   #   raster object
-+   
-+   if (x == 'farm_final') {
-+     dat$rasterValues <- as.numeric(
-+       str_split_fixed(dat[[x]], '_', 2)[, 2])
-+   } else {
-+     dat$rasterValues <- dat[[x]]
-+   }
-+   
-+   # Clip to cropland area
-+   dat$rasterValues <- ifelse(is.na(dat$crop), NA, dat$rasterValues)
-+   
-+   dat <- dat[order(dat$ID), ]
-+   rast_final <- rast.all@layers[[1]]
-+   rast_final <- setValues(rast_final, dat$rasterValues, dat$ID)
-+   
-+   return(rast_final)
-+ }
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{step_9} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{dat}\hlstd{,} \hlkwc{x} \hlstd{=} \hlstr{'farm_final'}\hlstd{) \{}
+  \hlcom{# Places farm size values into a raster}
+  \hlcom{# Params:}
+  \hlcom{#   df}
+  \hlcom{# Return:}
+  \hlcom{#   raster object}
+
+  \hlkwa{if} \hlstd{(x} \hlopt{==} \hlstr{'farm_final'}\hlstd{) \{}
+    \hlstd{dat}\hlopt{$}\hlstd{rasterValues} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(}
+      \hlkwd{str_split_fixed}\hlstd{(dat[[x]],} \hlstr{'_'}\hlstd{,} \hlnum{2}\hlstd{)[,} \hlnum{2}\hlstd{])}
+  \hlstd{\}} \hlkwa{else} \hlstd{\{}
+    \hlstd{dat}\hlopt{$}\hlstd{rasterValues} \hlkwb{<-} \hlstd{dat[[x]]}
+  \hlstd{\}}
+
+  \hlcom{# Clip to cropland area}
+  \hlstd{dat}\hlopt{$}\hlstd{rasterValues} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(}\hlkwd{is.na}\hlstd{(dat}\hlopt{$}\hlstd{crop),} \hlnum{NA}\hlstd{, dat}\hlopt{$}\hlstd{rasterValues)}
+
+  \hlstd{dat} \hlkwb{<-} \hlstd{dat[}\hlkwd{order}\hlstd{(dat}\hlopt{$}\hlstd{ID), ]}
+  \hlstd{rast_final} \hlkwb{<-} \hlstd{rast.all}\hlopt{@}\hlkwc{layers}\hlstd{[[}\hlnum{1}\hlstd{]]}
+  \hlstd{rast_final} \hlkwb{<-} \hlkwd{setValues}\hlstd{(rast_final, dat}\hlopt{$}\hlstd{rasterValues, dat}\hlopt{$}\hlstd{ID)}
+
+  \hlkwd{return}\hlstd{(rast_final)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Step 10: Write raster
 
-\begin{Schunk}
-\begin{Sinput}
-> step_10 <- function(rast_final, i) {
-+   # Writes raster
-+   # Params:
-+   #   rast_final
-+   #   i: random number
-+   # Returns
-+   #   Writes raster to file
-+   
-+   writeRaster(rast_final,
-+               filename  = paste0(
-+                 'raster_out_forCleanRunTest/farmSize_',
-+                 # 'raster_out_forPublication/farmSize_agarea_',
-+               format(Sys.time(), "%Y%m%d"), '_', i, '.tif'),
-+               format    = 'GTiff',
-+               overwrite = TRUE)
-+ }
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{step_10} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{rast_final}\hlstd{,} \hlkwc{i}\hlstd{) \{}
+  \hlcom{# Writes raster}
+  \hlcom{# Params:}
+  \hlcom{#   rast_final}
+  \hlcom{#   i: random number}
+  \hlcom{# Returns}
+  \hlcom{#   Writes raster to file}
+
+  \hlkwd{writeRaster}\hlstd{(rast_final,}
+              \hlkwc{filename}  \hlstd{=} \hlkwd{paste0}\hlstd{(}
+                \hlstr{'raster_out_forCleanRunTest/farmSize_'}\hlstd{,}
+                \hlcom{# 'raster_out_forPublication/farmSize_agarea_',}
+              \hlkwd{format}\hlstd{(}\hlkwd{Sys.time}\hlstd{(),} \hlstr{"%Y%m%d"}\hlstd{),} \hlstr{'_'}\hlstd{, i,} \hlstr{'.tif'}\hlstd{),}
+              \hlkwc{format}    \hlstd{=} \hlstr{'GTiff'}\hlstd{,}
+              \hlkwc{overwrite} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Resampled Results}
@@ -727,19 +873,21 @@ Step 10: Write raster
 
 Step 11: Repeat steps 1-10 100x. Note, 100 runs is illustrative. For more stable results increase to > 1k.
 
-\begin{Schunk}
-\begin{Sinput}
-> # i = 1
-> # for (i in 1:100) {  # use for full run
-> for (i in 1:2) {      # use for test run
-+   dat1 <- steps_1_6(df_lwd)
-+   dat2 <- step_7(dat1)
-+   dat3 <- step_8(dat2)
-+   rast <- step_9(dat3)
-+   step_10(rast, i)
-+ }
-\end{Sinput}
-\end{Schunk}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# i = 1}
+\hlcom{# for (i in 1:100) \{  # use for full run}
+\hlkwa{for} \hlstd{(i} \hlkwa{in} \hlnum{1}\hlopt{:}\hlnum{2}\hlstd{) \{}      \hlcom{# use for test run}
+  \hlstd{dat1} \hlkwb{<-} \hlkwd{steps_1_6}\hlstd{(df_lwd)}
+  \hlstd{dat2} \hlkwb{<-} \hlkwd{step_7}\hlstd{(dat1)}
+  \hlstd{dat3} \hlkwb{<-} \hlkwd{step_8}\hlstd{(dat2)}
+  \hlstd{rast} \hlkwb{<-} \hlkwd{step_9}\hlstd{(dat3)}
+  \hlkwd{step_10}\hlstd{(rast, i)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -747,6 +895,17 @@ Step 11: Repeat steps 1-10 100x. Note, 100 runs is illustrative. For more stable
 
 We sanity check that the proportional farm size distributions per country equals Lowder’s. We use one run as an example. As we can see the data is very close to the one-to-one line (but not exactly as would be expected based on small differences in row matching in our algorithm). Since the sampling scheme randomly shuffles the data, this plot will be slightly different for each sample.
 
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=0.6\linewidth]{figure/finalsanitycheck-1} 
+
+}
+
+\caption[Sanity check that the summed farm size per country equals Lowders]{Sanity check that the summed farm size per country equals Lowders}\label{fig:finalsanitycheck}
+\end{figure}
+
+\end{knitrout}
 
 
 
@@ -756,20 +915,31 @@ We sanity check that the proportional farm size distributions per country equals
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Final Output}
 
-Here is the mode of the 100 farm size maps generated.
+Here is one of the 100 farm size maps generated.
 
-\includegraphics{SI_B-finalmap}
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=0.6\linewidth]{figure/finalmap-1} 
+
+}
+
+\caption[Example map showing the dominant farm size (ha) per pixel]{Example map showing the dominant farm size (ha) per pixel}\label{fig:finalmap}
+\end{figure}
+
+\end{knitrout}
 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{Session information}
 
-\begin{Schunk}
-\begin{Sinput}
-> sessionInfo()
-\end{Sinput}
-\begin{Soutput}
+\begin{knitrout}\footnotesize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{sessionInfo}\hlstd{()}
+\end{alltt}
+\begin{verbatim}
 R version 4.3.1 (2023-06-16)
 Platform: aarch64-apple-darwin20 (64-bit)
 Running under: macOS Sonoma 14.3
@@ -803,21 +973,22 @@ loaded via a namespace (and not attached):
  [9] callr_3.7.3        vctrs_0.6.3        maps_3.4.1         pkgconfig_2.0.3   
 [13] crayon_1.5.2       fastmap_1.1.1      backports_1.4.1    labeling_0.4.2    
 [17] utf8_1.2.3         tzdb_0.4.0         ps_1.7.5           xfun_0.40         
-[21] terra_1.7-65       R6_2.5.1           stringi_1.7.12     Rcpp_1.0.11       
-[25] iterators_1.0.14   fields_15.2        Matrix_1.5-4.1     igraph_1.5.1      
-[29] timechange_0.2.0   tidyselect_1.2.0   rstudioapi_0.15.0  codetools_0.2-19  
-[33] processx_3.8.2     lattice_0.21-8     plyr_1.8.8         withr_2.5.0       
-[37] foreign_0.8-84     desc_1.4.2         units_0.8-5        proxy_0.4-27      
-[41] xml2_1.3.5         pillar_1.9.0       KernSmooth_2.23-21 rex_1.2.1         
-[45] generics_0.1.3     rprojroot_2.0.3    hms_1.1.3          munsell_0.5.0     
-[49] scales_1.2.1       gtools_3.9.4       class_7.3-22       glue_1.6.2        
-[53] lazyeval_0.2.2     tools_4.3.1        dotCall64_1.0-2    grid_4.3.1        
-[57] cyclocomp_1.1.1    crosstalk_1.2.0    colorspace_2.1-0   cli_3.6.1         
-[61] spam_2.9-1         fansi_1.0.4        gtable_0.3.3       digest_0.6.33     
-[65] classInt_0.4-10    htmlwidgets_1.6.2  farver_2.1.1       htmltools_0.5.6   
-[69] lifecycle_1.0.3    MASS_7.3-60       
-\end{Soutput}
-\end{Schunk}
+[21] highr_0.10         terra_1.7-65       R6_2.5.1           stringi_1.7.12    
+[25] Rcpp_1.0.11        iterators_1.0.14   fields_15.2        Matrix_1.5-4.1    
+[29] igraph_1.5.1       timechange_0.2.0   tidyselect_1.2.0   rstudioapi_0.15.0 
+[33] codetools_0.2-19   processx_3.8.2     lattice_0.21-8     plyr_1.8.8        
+[37] withr_2.5.0        evaluate_0.21      foreign_0.8-84     desc_1.4.2        
+[41] units_0.8-5        proxy_0.4-27       xml2_1.3.5         pillar_1.9.0      
+[45] KernSmooth_2.23-21 rex_1.2.1          generics_0.1.3     rprojroot_2.0.3   
+[49] hms_1.1.3          munsell_0.5.0      scales_1.2.1       gtools_3.9.4      
+[53] class_7.3-22       glue_1.6.2         lazyeval_0.2.2     tools_4.3.1       
+[57] dotCall64_1.0-2    grid_4.3.1         cyclocomp_1.1.1    crosstalk_1.2.0   
+[61] colorspace_2.1-0   cli_3.6.1          spam_2.9-1         fansi_1.0.4       
+[65] gtable_0.3.3       digest_0.6.33      classInt_0.4-10    farver_2.1.1      
+[69] htmlwidgets_1.6.2  htmltools_0.5.6    lifecycle_1.0.3    MASS_7.3-60       
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

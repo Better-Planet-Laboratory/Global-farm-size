@@ -69,7 +69,7 @@
 % creates ReferencesDDA_SIC.bib
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+% \SweaveOpts{concordance=TRUE}
 
 
 
@@ -87,7 +87,7 @@
 
 This dataset was originally created for the peer-reviewed publication: 
 
-Mehrabi, Z., McDowell, M.J., Ricciardi, V. et al. 2020. The global divide in data-driven farming. Nature Sustainability, 4:154–160. https://doi.org/10.1038/s41893-020-00631-0. 
+Mehrabi, Z., McDowell, M.J., Ricciardi, V. et al. 2020. The global divide in data-driven farming. Nature Sustainability, 4:154–160. https://doi.org/10.1038/s41893-020-00631-0 \cite{Mehrabi}
 
 Please use this citation alongside the NASA-SEDAC doi associated with this entry when citing. Note, while only croplands were included in this prior paper, here we include all agricultural lands. 
 
@@ -99,7 +99,7 @@ The aim of this document is to create a global map of farm sizes. We do this by 
 \section{Reproducibility}
 \label{reproducibility}
 
-Here we call the  \textbf{R} package \texttt{renv} (\cite{R-renv}). This will create a local library on your computer and install a copy of the packages required by this project as they existed on CRAN by the specified version number, and update the \textbf{R} session to use these packages. This helps make our analysis fully reproducible on your machine. 
+Here we call the  \textbf{R} package \texttt{renv} \cite{R-renv}. This will create a local library on your computer and install a copy of the packages required by this project as they existed on CRAN by the specified version number, and update the \textbf{R} session to use these packages. This helps make our analysis fully reproducible on your machine. 
 
 Note, the `renv.lock` file needs to be in the top level of this project's directory. This code block needs to only be run when initially setting up your project then can be commented out.
 
@@ -139,14 +139,14 @@ For the analysis in this document we will be using the following packages: \Sexp
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Data}
 
-In this analysis, we leverage three key datasets. Lowder, Skoet, and Raney 2016 \cite{Lowder} (Lowder, hereafter) contain farm size distributions (in terms of agricultural area and the number of farms) for 100 countries. Lesiv and Fritz et al. 2019 \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv’s ordinal field size classes to spatially disaggregate the Lowder farm size classes, using known agricultural area from Ramankutty et al. 2008 \cite{Ramankutty}. Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
+In this analysis, we leverage three key datasets. Lowder, Skoet, and Raney 2016 \cite{Lowder} (Lowder, hereafter) contain farm size distributions (in terms of agricultural area and the number of farms) for 100 countries. Lesiv and Fritz et al. 2019 \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv’s ordinal field size classes to spatially disaggregate the Lowder farm size classes, using known agricultural area from Ramankutty et al. 2008 \cite{Ramankutty} (Ramankutty, hereafter). Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
 
 1. Global field size data from Lesiv, retrieved from from http://pure.iiasa.ac.at/id/eprint/15526/ on October 12th, 2018.
 
 2. Country farm size distributions from Lowder, retrieved from 
 http://iopscience.iop.org/article/10.1088/1748-9326/11/12/124010 on July 12th, 2018.
 
-3. Global cropland and pastureland from \cite{Ramankutty} (Ramankutty, hereafter), retrieved from www.earthstat.org on July 12th 2018.
+3. Global cropland and pastureland from Ramankutty, retrieved from www.earthstat.org on July 12th 2018.
 
 4. Country boundaries, retrieved internally in R through \cite{R-rworldmap}.
 
@@ -992,7 +992,7 @@ loaded via a namespace (and not attached):
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+\newpage
 \printbibliography[heading=bibintoc]
 
 \end{document}

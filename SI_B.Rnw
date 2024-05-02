@@ -1,7 +1,7 @@
 \documentclass{article}
 
-\title{Mehrabi et al. 2020. The global divide in data driven farming. Supplementary Information B: Global farm size map.}
-\author{Code by Vincent Ricciardi}
+\title{Global Farm Size, Version 1, 2000.}
+\author{Zia Mehrabi and Vincent Ricciardi}
 \usepackage[margin=2.5 cm]{geometry}
 \usepackage{color}
 \usepackage[parfill]{parskip}
@@ -11,15 +11,15 @@
 \usepackage{float}
 %\usepackage{tgadventor} % fonts
 %\renewcommand{\familydefault}{\sfdefault}
-\usepackage[backend=bibtex, style=ieee, citestyle=authoryear]{biblatex}
-\addbibresource{ReferencesDDA_SIC.bib}
+\usepackage[backend=bibtex, style=ieee, citestyle=numeric-comp]{biblatex}
+\addbibresource{References.bib}
 \addbibresource{Rpackages.bib}
 
-% \input{ReferencesPapersTex} 
-%creates ReferencesDDA_SIC.bib
+% \input{ReferencesPapersTex}
+% creates ReferencesDDA_SIC.bib
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+% \SweaveOpts{concordance=TRUE}
 
 <<bibbackground, echo=F, include=F>>=
 Sys.setenv(TEXINPUTS = getwd(),
@@ -56,14 +56,23 @@ options(digits = 3)
 \newpage
 \section{Aim of document}
 
-The aim of this document is to create a global map of farm sizes. We do this by merging two currently available sources of information on the distribution of farm sizes across the world: national level data on farm size distributions and subnational data on field size distributions. The resulting map is a "best guess" of where different sizes of farms are distributed globally. We caution that this map should not be used for detailed country level analysis, but is intended for global assessment studies, where results are typically aggregated at the regional or global level. This document explains the underlying data, pre-processing, and algorithm we developed to create this map. We were driven to create this map as a work that can be built upon and improved as higher resolution and more accurate data become available.
+This dataset was originally created for the peer-reviewed publication: 
+
+Mehrabi, Z., McDowell, M.J., Ricciardi, V. et al. 2020. The global divide in data-driven farming. Nature Sustainability, 4:154–160. https://doi.org/10.1038/s41893-020-00631-0 \cite{Mehrabi}.
+
+Please use the following citation alongside the NASA-SEDAC doi associated with this entry when citing. Note, while only croplands were included in the prior paper, here we include all agricultural lands:
+
+Mehrabi, Z. and V. Ricciardi. 2024. Global Farm Size, Version 1, 2000. Palisades, NY: NASA Socioeconomic Data and Applications Center (SEDAC). 
+
+The aim of this document is to create a global map of farm sizes. We do this by merging two currently available sources of information on the distribution of farm sizes across the world: national level data on farm size distributions and subnational data on field size distributions. The resulting map is a dataset of where different sizes of farms are distributed globally. As with the geospatial products on which the map is derived, we caution that this map should not be used for detailed within country-level analysis, but is intended for global assessment studies, where results are typically aggregated at the regional or global level. This document explains the underlying data, pre-processing, and algorithm we developed to create this map. We were driven to create this map as a work that can be built upon and improved as higher resolution and more accurate data become available.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Reproducibility}
 \label{reproducibility}
 
-Here we call the  \textbf{R} package \texttt{renv} (\cite{R-renv}). This will create a local library on your computer and install a copy of the packages required by this project as they existed on CRAN by the specified version number, and update the \textbf{R} session to use these packages. This helps make our analysis fully reproducible on your machine. 
+Here we call the  \textbf{R} package \texttt{renv} \cite{R-renv}. This will create a local library on your computer and install a copy of the packages required by this project as they existed on CRAN by the specified version number, and update the \textbf{R} session to use these packages. This helps make our analysis fully reproducible on your machine. 
 
 Note, the `renv.lock` file needs to be in the top level of this project's directory. This code block needs to only be run when initially setting up your project then can be commented out.
 
@@ -111,14 +120,14 @@ packages <- c('data.table',
 new_packages <- packages[!(packages %in% installed.packages()[,'Package'])]
 if(length(new_packages)) install.packages(new_packages)
 
-lapply(packages, require, character = TRUE)
+tmp <- lapply(packages, require, character = TRUE)
 detach(package:plyr)  # detached here to avoid conflicts with dplyr
 @
 
 
 <<echo=F, include=F>>=
 c <- paste0('R-', packages)
-c <- paste0('\\Sexpr{',c,'}', ' (\\cite{', c,'})')
+c <- paste0('\\Sexpr{',c,'}', ' \\cite{', c,'}')
 # Writes R packages used to .bib.
 # Commented out b/c I need to manually fix syntax on an erroneous an entry
 # write_bib(x = packages, file = 'Rpackages.bib')
@@ -130,14 +139,14 @@ For the analysis in this document we will be using the following packages: \Sexp
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Data}
 
-In this analysis we leverage two key datasets. \cite{Lowder} (Lowder, hereafter) contains farm size distributions (in terms of agricultural area and the number of farms) for ~100 countries. \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv's qualitative field size classes to spatially disaggregate the Lowder farm size classes. Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
+In this analysis, we leverage three key datasets. Lowder, Skoet, and Raney 2016 \cite{Lowder} (Lowder, hereafter) contain farm size distributions (in terms of agricultural area and the number of farms) for 100 countries. Lesiv and Fritz et al. 2019 \cite{Lesiv} (Lesiv, hereafter) contains a crowd-sourced point data of categorical field size classes (ranging from very small to large fields). We use Lesiv’s ordinal field size classes to spatially disaggregate the Lowder farm size classes, using known agricultural area from Ramankutty et al. 2008 \cite{Ramankutty} (Ramankutty, hereafter). Links and access dates to these input data and other ancillary data sets used in our analysis as highlighted below:
 
 1. Global field size data from Lesiv, retrieved from from http://pure.iiasa.ac.at/id/eprint/15526/ on October 12th, 2018.
 
 2. Country farm size distributions from Lowder, retrieved from 
 http://iopscience.iop.org/article/10.1088/1748-9326/11/12/124010 on July 12th, 2018.
 
-3. Global cropland and pastureland from \cite{Ramankutty} (Ramankutty, hereafter), retrieved from www.earthstat.org on July 12th 2018.
+3. Global cropland and pastureland from Ramankutty, retrieved from www.earthstat.org on July 12th 2018.
 
 4. Country boundaries, retrieved internally in R through \cite{R-rworldmap}.
 
@@ -218,16 +227,16 @@ write.csv(lwd, 'data/tmp/lwd.csv')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Global agricultural area}
 
-We use Ramankutty's 10 km\textsuperscript{2} cropland map (crop, hereafter) and pastureland map (pasture, hereafter) as our reference layer of the distribution of agricultural land at the subnational level.  We read in these files here and unionize the crop and pasture maps to create an agricultural land raster (ag, hereafter).
+We use Ramankutty's 0.083 degree cropland map (crop, hereafter) and pastureland map (pasture, hereafter) as our reference layer of the distribution of agricultural land at the subnational level.  We read in these files here and unionize the crop and pasture maps to create an agricultural land raster (ag, hereafter).
 
 <<getagland>>=
 crop <- paste0('data/Ramankutty_2008_cropland/',
                 'CroplandPastureArea2000_Geotiff/',
-                'cropland2000_area.tif')
+                'Cropland2000_5m.tif')
 
 pasture <- paste0('data/Ramankutty_2008_cropland/',
                   'CroplandPastureArea2000_Geotiff/',
-                  'pasture2000_area.tif')
+                  'Pasture2000_5m.tif')
 
 crop <- raster(crop)
 pasture <- raster(pasture)
@@ -246,7 +255,7 @@ ag[ag[] == 0] <- NA
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Global field sizes}
 
-Here we interpolate the crowd-sourced field size data point data onto Ramankutty's agricultural area data. While the original sampling frame for this field size was on a unionized cropland map, we extend the distribution here in an attempt to better match and account for the inclusion of non-cropland in Lowder's farm size data (noting that later we will clip the resulting product to cropland only).  We use kk-nearest neighbor (kkNN) on a 0.01 degree grid (kkNN is a weighted variant of kNN that we use to try to account as best as possible for Lesiv's sparsely sampled points in Africa).
+Here we interpolate the crowd-sourced field size data point data onto Ramankutty's agricultural area data. While the original sampling frame for this field size was on a unionized cropland map, we extend the distribution here in an attempt to better match and account for the inclusion of non-cropland in Lowder's farm size data. We use kk-nearest neighbor (kkNN), a weighted variant of kNN that we use to try to account as best as possible for Lesiv’s sparsely sampled points in some locations, e.g. Africa).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Read in Data}
@@ -319,9 +328,8 @@ fs_interp_train <- kknn::train.kknn(field_size ~.,
                                     kcv = 10)
 @
 
-Next we summarize and plot the results of the model fitting. We note the the minimal classifications error is \Sexpr{min(fs_interp_train$MISCLASS)}. Crudely, with 5 classes we would expect a raw misclassification error of 80\%, which suggests the model has in the best case helped reduce blind uncertainty by around \Sexpr{(min(fs_interp_train$MISCLASS)/.8)*100}\%. We also plot the error from the different models below. 
-
-Future versions improvements to this model may be made through identifying ancillary features that do a better job of predicting field size classes than simply latitude and longitude alone. Similarly, using an ordinal response, instead of the nominal response defaulted here, is likely to improve predictions also.
+Next we summarize and plot the results of the model fitting. We also plot the error from the
+different models below. We note the minimal misclassification error is \Sexpr{round(min(fs_interp_train$MISCLASS), 2)}. Crudely, with a balanced dataset of 5 classes you would expect a null misclassification error of 0.8, and so under this special case the best model halves uncertainty in predictions from a random classifier. Future versions improvements to this model may be made through using haversine distance, or identifying ancillary features that do a better job of predicting field size classes. Similarly, using an ordinal response, instead of the nominal response defaulted here, may improve predictions also.
 
 <<plotknnres, fig.cap='kkNN results of field size interpolation', out.width='0.6\\linewidth', fig.height=5, fig.width=5,size='footnotesize', echo=F>>=
 par(mfrow = c(1, 1))
@@ -379,7 +387,7 @@ To run our algorithm to create a field size map we need to ensure all rasterized
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Convert to equal area}
 
-Here we set each dataset to have an equal area (Eckert IV) at a 8.4 km\textsuperscript{2} resolution. To interpolate, we use nearest neighbor for the categorical data and bilinear for the continuous data.
+Here we set each dataset to have an equal area (Eckert IV) at a 8.4 km x 8.4 km resolution. To interpolate, we use nearest neighbor for the categorical data and bilinear for the continuous data.
 
 <<setcrs>>=
 rast.list.ngb <- list(lesiv, world)
@@ -608,8 +616,13 @@ steps_1_6 <- function(df_lwd) {
            pasture = pasture * resValue^2 * 0.0001, # new
            ag = crop + pasture,                     # new
            ag_area = ag * resValue^2 * 0.0001, # original was this line only
-           cumsum_area = cumsumSkipNA(ag_area), 
-           prop_sums = cumsum_area / max(cumsum_area, na.rm = T))
+           cumsum_area = cumsumSkipNA(ag_area),
+           prop_sums = ifelse(
+               is.na(cumsum_area), 
+               NA,
+               cumsum_area / max(cumsum_area, na.rm = T)
+               )
+    )
   
   return(dat)
 }
@@ -793,7 +806,7 @@ step_10 <- function(rast_final, i) {
 \subsection{Resampled Results}
 
 
-Step 11: Repeat steps 1-10 100x. Note, 100 runs is illustrative. For more stable results increase to > 1k.
+Step 11: Repeat steps 1-10 100x. Note, 100 runs is illustrative. For more stable results increase to over 1k.
 
 <<>>=
 # i = 1
@@ -813,7 +826,7 @@ for (i in 1:2) {      # use for test run
 
 We sanity check that the proportional farm size distributions per country equals Lowder’s. We use one run as an example. As we can see the data is very close to the one-to-one line (but not exactly as would be expected based on small differences in row matching in our algorithm). Since the sampling scheme randomly shuffles the data, this plot will be slightly different for each sample.
 
-<<finalsanitycheck, fig.cap='Sanity check that the summed farm size per country equals Lowders', out.width='0.6\\linewidth', fig.height=5, fig.width=7, size='footnotesize', echo=F>>=
+<<finalsanitycheck, fig.cap='Sanity check that the summed farm size per country equals Lowders', out.width='0.6\\linewidth', fig.height=5, fig.width=7, size='footnotesize', echo=F, fig=T>>=
 dat1 <- steps_1_6(df_lwd)
 dat2 <- step_7(dat1)
 dat3 <- step_8(dat2)
@@ -889,20 +902,16 @@ ggplot(tmp_compare, aes(value.xp, value.yp)) +
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Final Output}
 
-Here is the mode of the 100 farm size maps generated.
+Here is one of the 100 farm size maps generated.
 
-<<finalmap, fig.cap='Final map, where dominant farm size (ha) is shown per pixel for the mode of the 100 generated maps.', out.width='0.6\\linewidth', out.width='100%', size='footnotesize', echo=F>>=
+<<finalmap, fig.cap='Example map showing the dominant farm size (ha) per pixel', out.width='0.6\\linewidth', fig.height=5, fig.width=7, size='footnotesize', echo=F, fig=T>>=
 
-knitr::include_graphics('finalMap.png')
-
-# Uncomment to produce map - for knitr compilation
-# this causes current computer to push memory caps
-# even with gc()
-# gc()
-# fts <- list.files(path = 'raster_out_forPublication/',
-#                  pattern = 'tif$',
-#                  full.names = T)
-# fs <- stack(fs)
+fts <- list.files(path = 'raster_out_forPublication/',
+                 pattern = '_1.tif$',
+                 full.names = T)
+fs <- raster(fts)
+# fs_spdf <- as(fs, 'SpatialPixelsDataFrame')
+# fs <- stack(fts)
 # fs <- brick(fs)
 # 
 # getmode <- function(v) {
@@ -911,33 +920,30 @@ knitr::include_graphics('finalMap.png')
 # }
 # 
 # fs <- calc(fs, getmode)
-# fs_spdf <- as(fs, 'SpatialPixelsDataFrame')
-# 
-# fs_df <- as.data.frame(fs_spdf)
-# colnames(fs_df) <- c('value', 'x', 'y')
-# fs_df <- fs_df %>%
-#   arrange(value) %>%
-#   mutate(value = factor(value, unique(value)))
-# 
-# ggplot() +
-#   geom_raster(data = fs_df,
-#             aes(x, y,
-#                 fill = value),
-#             alpha = 0.8) +
-#   theme_map(base_family = 'AvantGarde') +
-#   theme(plot.background = element_rect(fill = 'black'),
-#         legend.position = 'right',
-#         legend.justification = 'top',
-#         legend.text = element_text(color = 'white'),
-#         legend.title = element_text(color = 'white'),
-#         legend.background = element_rect(fill = 'transparent')) +
-#   # scale_fill_brewer(palette = 'PiYG', direction = -1) +
-#   scale_fill_viridis_d(direction = -1, begin = .1) +
-#   coord_equal() +
-#   labs(fill = 'Dominant\nFarm Size (ha)')
+fs_spdf <- as(fs, 'SpatialPixelsDataFrame')
 
- 
-# ggsave('finalMap.png', dpi = 800)
+fs_df <- as.data.frame(fs_spdf)
+colnames(fs_df) <- c('value', 'x', 'y')
+fs_df <- fs_df %>%
+  arrange(value) %>%
+  mutate(value = factor(value, unique(value)))
+
+ggplot() +
+  geom_raster(data = fs_df,
+            aes(x, y,
+                fill = value),
+            alpha = 0.8) +
+  theme_map(base_family = 'AvantGarde') +
+  theme(plot.background = element_rect(fill = 'black'),
+        legend.position = 'right',
+        legend.justification = 'top',
+        legend.text = element_text(color = 'white'),
+        legend.title = element_text(color = 'white'),
+        legend.background = element_rect(fill = 'transparent')) +
+  # scale_fill_brewer(palette = 'PiYG', direction = -1) +
+  scale_fill_viridis_d(direction = -1, begin = .1) +
+  coord_equal() +
+  labs(fill = 'Dominant\nFarm Size (ha)')
 @
 
 \newpage
@@ -951,7 +957,7 @@ sessionInfo()
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+\newpage
 \printbibliography[heading=bibintoc]
 
 \end{document}

@@ -143,8 +143,8 @@ In this analysis, we leverage three key datasets. Lowder, Skoet, and Raney 2016 
 
 1. Global field size data from Lesiv, retrieved from from http://pure.iiasa.ac.at/id/eprint/15526/ on October 12th, 2018.
 
-2. Country farm size distributions from Lowder, retrieved from 
-http://iopscience.iop.org/article/10.1088/1748-9326/11/12/124010 on July 12th, 2018.
+2. Country farm size distributions from Lowder, retrieved from \newline 
+https://www.sciencedirect.com/science/article/pii/S0305750X15002703 on July 12th, 2018.
 
 3. Global cropland and pastureland from Ramankutty, retrieved from www.earthstat.org on July 12th 2018.
 
